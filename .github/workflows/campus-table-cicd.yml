@@ -124,7 +124,7 @@ jobs:
               -e TZ=Asia/Seoul \
               -e "SPRING_PROFILES_ACTIVE=${PROFILE}" \
               -v /etc/localtime:/etc/localtime:ro \
-              -v /docker/volume/app/${BRANCH}:/app \
+              -v /docker/volume/backend/${BRANCH}:/app \
               ${IMAGE}
             
             # <none> 태그로 남은 이미지 정리
