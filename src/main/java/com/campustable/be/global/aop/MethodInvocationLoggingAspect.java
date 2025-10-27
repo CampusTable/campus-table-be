@@ -1,6 +1,6 @@
 package com.campustable.be.global.aop;
 
-import com.chuseok22.timemateserver.common.core.exception.ErrorCode;
+import com.campustable.be.global.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
