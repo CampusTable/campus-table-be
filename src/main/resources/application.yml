@@ -1,42 +1,36 @@
-  plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.7'
-    id 'io.spring.dependency-management' version '1.1.7'
-  }
-    
-    group = 'com.campustable'
-    version = '0.0.1-SNAPSHOT'
-    description = 'campus-table-be'
-    
-    java {
-    toolchain {
-    languageVersion = JavaLanguageVersion.of(21)
-    }
-  }
-    
-    configurations {
-    compileOnly {
-    extendsFrom annotationProcessor
-    }
-  }
-    
-    repositories {
-    mavenCentral()
-  }
-    
-    dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'org.postgresql:postgresql'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+spring:
+  profiles:
+    active: prod
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+  jackson:
+    time-zone: Asia/Seoul
+  mvc:
+    format:
+      date-time: "yyyy-MM-dd'T'HH:mm:ss"
+    pathmatch:
+      matching-strategy: ant_path_matcher
 
-    // Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
-  }
-    
-    tasks.named('test') {
-    useJUnitPlatform()
-  }
+springdoc:
+  servers:
+    - url: http://43.201.107.56:8087
+      description: main-server
+    - url: http://43.201.107.56:8088
+      description: test-server
+    - url: http://localhost:8080
+      description: local-server
+
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
+  swagger-ui:
+    path: /docs/swagger
+server:
+  forward-headers-strategy: framework
