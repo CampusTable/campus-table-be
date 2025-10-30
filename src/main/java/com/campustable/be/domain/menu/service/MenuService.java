@@ -3,8 +3,10 @@ package com.campustable.be.domain.menu.service;
 
 import com.campustable.be.domain.menu.dto.MenuRequest;
 import com.campustable.be.domain.menu.dto.MenuResponse;
+import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
 import com.campustable.be.domain.menu.entity.Menu;
 import com.campustable.be.domain.menu.exception.MenuAlreadyExistsException;
+import com.campustable.be.domain.menu.exception.MenuNotFoundException;
 import com.campustable.be.domain.menu.repository.MenuRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ public class MenuService {
 
     private final MenuRepository menuRepository;
 
+
+
     @Transactional(readOnly = true)
     public List<MenuResponse> getAllMenus(){
 
@@ -28,7 +32,9 @@ public class MenuService {
         return menus.stream().map(MenuResponse::new).toList();
     }
 
-    @Transactional
+
+
+
     public MenuResponse createMenu(MenuRequest requestDto){
 
         Optional<Menu> existingMenu = menuRepository.findByCategoryIdAndMenuName(
@@ -50,5 +56,29 @@ public class MenuService {
     }
 
 
+    @Transactional
+    public MenuResponse updateMenu(Long menuId, MenuUpdateRequest requestDto){
+
+        Menu menu = menuRepository.findById(menuId)
+                .orElseThrow(()-> new MenuNotFoundException());
+
+        if(requestDto.getMenuName() != null){
+            menu.setMenuName(requestDto.getMenuName());
+        }
+        if(requestDto.getPrice() != null){
+            menu.setPrice(requestDto.getPrice());
+        }
+        if(requestDto.getMenuPicture() != null){
+            menu.setMenuPicture(requestDto.getMenuPicture());
+        }
+        if(requestDto.getAvailable() != null){
+            menu.setAvailable(requestDto.getAvailable());
+        }
+        if(requestDto.getStockQuantity() != null){
+            menu.setStockQuantity(requestDto.getStockQuantity());
+        }
+
+        return new MenuResponse(menu);
+    }
 
 }
