@@ -8,10 +8,10 @@ import java.math.BigDecimal;
 
 @Getter
 @NoArgsConstructor
-public class MenuCreateRequest {
+public class MenuRequest {
 
     private Integer categoryId;
-    private String name;
+    private String menuName;
     private BigDecimal price;
     private String menuPicture;
     private Boolean available;
@@ -21,7 +21,7 @@ public class MenuCreateRequest {
     public Menu toEntity(){
         Menu menu = new Menu();
         menu.setCategoryId(this.categoryId);
-        menu.setMenuName(this.name);
+        menu.setMenuName(this.menuName);
         menu.setPrice(this.price);
         menu.setMenuPicture(this.menuPicture);
         menu.setAvailable(this.available);

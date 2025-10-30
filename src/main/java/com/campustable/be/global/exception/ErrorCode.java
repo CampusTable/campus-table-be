@@ -23,7 +23,12 @@ public enum ErrorCode {
 
   SSO_AUTH_FAILED(HttpStatus.UNAUTHORIZED, "SSO 인증에 실패했습니다."),
 
-  SCRAPING_STRUCTURE_CHANGED(HttpStatus.INTERNAL_SERVER_ERROR, "대상 웹사이트의 구조가 변경되어 데이터를 가져올 수 없습니다.");
+  SCRAPING_STRUCTURE_CHANGED(HttpStatus.INTERNAL_SERVER_ERROR, "대상 웹사이트의 구조가 변경되어 데이터를 가져올 수 없습니다."),
+
+
+  // MENU
+  MENU_ALREADY_EXISTS(HttpStatus.CONFLICT, "해당 식당에 이미 존재하는 메뉴입니다.");
+
 
   private final HttpStatus status;
   private final String message;

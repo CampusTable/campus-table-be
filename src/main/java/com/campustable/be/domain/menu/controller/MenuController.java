@@ -1,8 +1,7 @@
 package com.campustable.be.domain.menu.controller;
 
-import com.campustable.be.domain.menu.dto.MenuCreateRequest;
+import com.campustable.be.domain.menu.dto.MenuRequest;
 import com.campustable.be.domain.menu.dto.MenuResponse;
-import com.campustable.be.domain.menu.entity.Menu;
 import com.campustable.be.domain.menu.service.MenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,7 +27,7 @@ public class MenuController {
     }
 
     @PostMapping
-    public ResponseEntity<MenuResponse> createMenu(@RequestBody MenuCreateRequest createRequest){
+    public ResponseEntity<MenuResponse> createMenu(@RequestBody MenuRequest createRequest){
         MenuResponse createMenu = menuService.createMenu(createRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createMenu);
