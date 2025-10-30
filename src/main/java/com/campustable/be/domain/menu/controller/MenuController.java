@@ -27,6 +27,16 @@ public class MenuController {
 
     }
 
+    @GetMapping("/category/{categoryID}")
+    public ResponseEntity<List<MenuResponse>> getAllMenusByCategoryId(
+           @PathVariable Integer categoryID){
+
+        List<MenuResponse> menus = menuService.getAllMenusByCategory(categoryID);
+
+        return  ResponseEntity.ok(menus);
+
+    }
+
     @PostMapping
     public ResponseEntity<MenuResponse> createMenu(@RequestBody MenuRequest createRequest){
         MenuResponse createMenu = menuService.createMenu(createRequest);
@@ -42,6 +52,15 @@ public class MenuController {
         MenuResponse updateMenu = menuService.updateMenu(menuID, updateRequest);
 
         return ResponseEntity.ok(updateMenu);
+    }
+
+    @DeleteMapping("/{menuID}")
+    public ResponseEntity<Void> deleteMenu(
+            @PathVariable Long menuID) {
+
+        menuService.deleteMenu(menuID);
+
+        return ResponseEntity.noContent().build();
     }
 
 }

@@ -8,6 +8,8 @@ import com.campustable.be.domain.menu.entity.Menu;
 import com.campustable.be.domain.menu.exception.MenuAlreadyExistsException;
 import com.campustable.be.domain.menu.exception.MenuNotFoundException;
 import com.campustable.be.domain.menu.repository.MenuRepository;
+import com.campustable.be.global.exception.CustomException;
+import com.campustable.be.global.exception.ErrorCode;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,18 +25,7 @@ public class MenuService {
     private final MenuRepository menuRepository;
 
 
-
-    @Transactional(readOnly = true)
-    public List<MenuResponse> getAllMenus(){
-
-        List<Menu> menus = menuRepository.findAll();
-
-        return menus.stream().map(MenuResponse::new).toList();
-    }
-
-
-
-
+    @Transactional
     public MenuResponse createMenu(MenuRequest requestDto){
 
         Optional<Menu> existingMenu = menuRepository.findByCategoryIdAndMenuName(
@@ -54,6 +45,32 @@ public class MenuService {
         return new MenuResponse(saveMenu);
 
     }
+
+    @Transactional(readOnly = true)
+    public List<MenuResponse> getAllMenus(){
+
+        List<Menu> menus = menuRepository.findAll();
+
+        return menus.stream().map(MenuResponse::new).toList();
+    }
+
+
+
+    @Transactional(readOnly = true)
+    public List<MenuResponse> getAllMenusByCategory(Integer categoryId){
+
+        List<Menu> menus = menuRepository.findByCategoryId(categoryId);
+
+
+        //임시 카테고리 없으면 예외 처리
+        if(menus.isEmpty()){
+            throw new CustomException(ErrorCode.MENU_NOT_FOUND);
+        }
+
+        return  menus.stream().map(MenuResponse::new).toList();
+
+    }
+
 
 
     @Transactional
@@ -80,5 +97,15 @@ public class MenuService {
 
         return new MenuResponse(menu);
     }
+
+
+    @Transactional
+    public void deleteMenu(Long menuId){
+
+        Menu menu = menuRepository.findById(menuId).orElseThrow(() -> new MenuNotFoundException());
+
+        menuRepository.deleteById(menuId);
+    }
+
 
 }
