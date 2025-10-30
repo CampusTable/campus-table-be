@@ -22,7 +22,7 @@ public class Menu {
     private Long id;
 
     @Column(name = "category_id", nullable = false)
-    private Long categoryId;
+    private Integer categoryId;
 
     @Column(name = "menu_name", nullable = false)
     private String menuName;
