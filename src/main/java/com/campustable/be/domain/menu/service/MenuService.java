@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +28,19 @@ public class MenuService {
 
     @Transactional
     public MenuResponse createMenu(MenuRequest requestDto){
+
+        if(requestDto.getMenuName()==null||requestDto.getMenuName().isBlank()){
+            throw new CustomException(ErrorCode.INVALID_MENU_NAME);
+        }
+        if (requestDto.getPrice()==null || requestDto.getPrice().compareTo(BigDecimal.ZERO)<0){
+            throw new CustomException(ErrorCode.INVALID_MENU_PRICE);
+        }
+        if (requestDto.getAvailable()==null){
+            throw new CustomException(ErrorCode.INVALID_MENU_AVAILABILITY);
+        }
+//        if(requestDto.getCategoryId()==null){
+//            throw new CustomException(ErrorCode.INVALID_REQUEST);
+//        }
 
         Optional<Menu> existingMenu = menuRepository.findByCategoryIdAndMenuName(
                 requestDto.getCategoryId(),
@@ -79,6 +93,16 @@ public class MenuService {
         Menu menu = menuRepository.findById(menuId)
                 .orElseThrow(()-> new MenuNotFoundException());
 
+        //예외 처리
+        if(requestDto.getMenuName()!=null&&requestDto.getMenuName().isBlank()){
+            throw new CustomException(ErrorCode.INVALID_MENU_NAME);
+        }
+        if(requestDto.getPrice()!=null&&requestDto.getPrice().compareTo(BigDecimal.ZERO)<0){
+            throw new CustomException(ErrorCode.INVALID_MENU_PRICE);
+        }
+
+
+        // null 아닌것들만  수정
         if(requestDto.getMenuName() != null){
             menu.setMenuName(requestDto.getMenuName());
         }

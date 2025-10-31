@@ -14,12 +14,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/menu")
 @RequiredArgsConstructor
-public class MenuController {
+public class MenuController implements MenuControllerDocs {
 
     private final MenuService menuService;
 
+
+    @Override
     @GetMapping
-    private ResponseEntity<List<MenuResponse>> getAllMenus(){
+    public ResponseEntity<List<MenuResponse>> getAllMenus(){
 
         List<MenuResponse> menus = menuService.getAllMenus();
 
@@ -27,6 +29,7 @@ public class MenuController {
 
     }
 
+    @Override
     @GetMapping("/category/{categoryID}")
     public ResponseEntity<List<MenuResponse>> getAllMenusByCategoryId(
            @PathVariable Integer categoryID){
@@ -37,6 +40,7 @@ public class MenuController {
 
     }
 
+    @Override
     @PostMapping
     public ResponseEntity<MenuResponse> createMenu(@RequestBody MenuRequest createRequest){
         MenuResponse createMenu = menuService.createMenu(createRequest);
@@ -44,6 +48,7 @@ public class MenuController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createMenu);
     }
 
+    @Override
     @PatchMapping("/{menuID}")
     public ResponseEntity<MenuResponse> updateMenu(
             @PathVariable Long menuID,
@@ -54,6 +59,7 @@ public class MenuController {
         return ResponseEntity.ok(updateMenu);
     }
 
+    @Override
     @DeleteMapping("/{menuID}")
     public ResponseEntity<Void> deleteMenu(
             @PathVariable Long menuID) {

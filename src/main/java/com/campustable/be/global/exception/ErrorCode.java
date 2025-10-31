@@ -31,8 +31,13 @@ public enum ErrorCode {
 
   MENU_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 메뉴를 찾을 수 없습니다."),
 
-  CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카테고리를 찾을 수 없습니다.");
+  CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카테고리를 찾을 수 없습니다."),
 
+  INVALID_MENU_NAME(HttpStatus.BAD_REQUEST, "메뉴 이름을 입력해 주세요."),
+
+  INVALID_MENU_PRICE(HttpStatus.BAD_REQUEST, "메뉴 가격은 0원 이상이어야 합니다."),
+
+  INVALID_MENU_AVAILABILITY(HttpStatus.BAD_REQUEST, "메뉴 판매 여부를 입력해주세요");
 
   private final HttpStatus status;
   private final String message;
