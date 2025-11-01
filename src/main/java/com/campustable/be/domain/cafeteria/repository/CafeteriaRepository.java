@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CafeteriaRepository extends JpaRepository<Cafeteria, Long> {
 
-  Optional<Cafeteria> findByCode(String code);
+  Optional<Cafeteria> findByName(String name);
 }

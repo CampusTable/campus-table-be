@@ -27,9 +27,6 @@ public class Cafeteria {
   @Column(name = "cafeteria_id")
   private Long cafeteriaId;
 
-  @Column(unique = true, nullable = false, length = 20)
-  private String code;
-
   @Column(nullable = false, length = 20)
   private String name;
 
@@ -40,8 +37,17 @@ public class Cafeteria {
   private String address;
 
   public void update(CafeteriaRequest request){
-    this.name = request.getName();
-    this.description = request.getDescription();
-    this.address = request.getAddress();
+
+    if (request.getName() != null) {
+      this.name = request.getName();
+    }
+
+    if (request.getDescription() != null) {
+      this.description = request.getDescription();
+    }
+
+    if (request.getAddress() != null) {
+      this.address = request.getAddress();
+    }
   }
 }
