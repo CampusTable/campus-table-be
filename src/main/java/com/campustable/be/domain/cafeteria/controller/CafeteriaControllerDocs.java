@@ -18,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 @Tag(name = "식당 관리 (Cafeteria)", description = "교내 식당 정보를 관리하고 조회하는 API")
 public interface CafeteriaControllerDocs {
 
-  String CODE_DESCRIPTION = "식당 고유 식별 코드 (Enum Key). STUDENT_HALL, JINGWAN, GUNJA_HALL 중 하나. 대소문자 구분 없음.";
+  String CODE_DESCRIPTION = "식당 고유 식별 코드 (Enum Key). STUDENT_HALL, JIN_HALL, GUNJA_HALL 중 하나. 대소문자 구분 없음.";
   String CAFETERIA_NOT_FOUND_DESC = "CAFETERIA_NOT_FOUND: 요청된 코드의 식당 정보가 DB에 존재하지 않습니다.";
 
   // --- 1. 식당 생성 (POST) ---
@@ -95,7 +95,7 @@ public interface CafeteriaControllerDocs {
   @Operation(
       summary = "4. 식당 삭제",
       description = "특정 식별 코드를 가진 식당 정보를 삭제합니다.",
-      parameters = @Parameter(name = "code", in = ParameterIn.PATH, description = CODE_DESCRIPTION, required = true, example = "JINGWAN"),
+      parameters = @Parameter(name = "code", in = ParameterIn.PATH, description = CODE_DESCRIPTION, required = true, example = "JIN_HALL"), // JINGWAN -> JIN_HALL 로 수정 반영
       responses = {
           @ApiResponse(responseCode = "204", description = "성공적인 삭제 (No Content)"),
           @ApiResponse(responseCode = "404", description = CAFETERIA_NOT_FOUND_DESC)
