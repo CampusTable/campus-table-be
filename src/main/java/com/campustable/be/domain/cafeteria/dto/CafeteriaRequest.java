@@ -2,7 +2,6 @@ package com.campustable.be.domain.cafeteria.dto;
 
 import com.campustable.be.domain.cafeteria.entity.Cafeteria;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,10 +9,8 @@ import lombok.Setter;
 @Setter
 
 public class CafeteriaRequest {
-  @Schema(description = "식당의 비즈니스 고유 코드입니다. (예: HAKGWAN, JINGWAN)", example = "HAKGWAN")
-  private String code;
 
-  @Schema(description = "사용자에게 표시되는 식당 이름")
+  @Schema(description = "사용자에게 표시되는 식당 이름 (예: HAKGWAN, JINGWAN))")
   private String name;
 
   @Schema(description = "식당의 간략한 설명")
@@ -22,5 +19,12 @@ public class CafeteriaRequest {
   @Schema(description = "식당의 위치 주소")
   private String address;
 
+  public Cafeteria toEntity(CafeteriaRequest cafeteria) {
+    return Cafeteria.builder()
+        .name(cafeteria.getName())
+        .description(cafeteria.getDescription())
+        .address(cafeteria.getAddress())
+        .build();
+  }
 
 }

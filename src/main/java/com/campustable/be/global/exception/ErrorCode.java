@@ -29,7 +29,9 @@ public enum ErrorCode {
 
   CAFETERIA_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 식당 정보를 찾을 수 없습니다."),
 
-  CAFETERIA_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 식당 코드입니다.");
+  CAFETERIA_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 식당 코드입니다."),
+
+  INVALID_CAFETERIA_NAME(HttpStatus.NOT_FOUND, "유효한 식당 이름이 아닙니다.");
 
 
   private final HttpStatus status;
