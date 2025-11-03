@@ -13,14 +13,19 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.aot.AotServices.Loader;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Table(name = "operating_hours")
 public class OperatingHours {
 
@@ -36,6 +41,12 @@ public class OperatingHours {
   @Enumerated(EnumType.STRING)
   @Column(name = "day_of_week", nullable = false, length = 3)
   private DayOfWeekEnum dayOfWeek;
+
+  @Column(name = "break_open_time", nullable = false)
+  private LocalTime breaksStartTime;
+
+  @Column(name = "break_close_time", nullable = false)
+  private LocalTime breaksCloseTime;
 
   @Column(name = "open_time", nullable = false)
   private LocalTime openTime;
