@@ -3,15 +3,14 @@ package com.campustable.be.domain.cafeteria.controller;
 import com.campustable.be.domain.cafeteria.dto.OperatingHoursRequest;
 import com.campustable.be.domain.cafeteria.dto.OperatingHoursResponse;
 import com.campustable.be.domain.cafeteria.service.OperatingHoursService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,27 +23,36 @@ public class OperatingHoursController implements OperatingHoursControllerDocs {
   private final OperatingHoursService operatingHoursService;
 
   @Override
-  @PostMapping("/admin/cafeterias/{code}/operating-hours")
-  public ResponseEntity<OperatingHoursResponse> createOperatingHours(@PathVariable String code,
+  @PostMapping("/admin/cafeterias/{id}/operating-hours")
+  public ResponseEntity<OperatingHoursResponse> createOperatingHoursByCafeteriaId(@PathVariable Long id,
       @RequestBody OperatingHoursRequest request) {
-    OperatingHoursResponse response = operatingHoursService.createOperatingHours(code, request);
+
+    OperatingHoursResponse response = operatingHoursService.createOperatingHoursByCafeteriaId(request, id);
+
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  @GetMapping("/cafeterias/{code}/operating-hours")
-  public ResponseEntity<OperatingHoursResponse> getOperatingHours(@PathVariable String code) {
-    OperatingHoursResponse responses = operatingHoursService.getOperatingHours(code);
+  @GetMapping("/cafeterias/{id}/operating-hours")
+  public ResponseEntity<OperatingHoursResponse> getOperatingHoursByCafeteriaId(@PathVariable Long id) {
+
+    OperatingHoursResponse responses = operatingHoursService.getOperatingHoursByCafeteriaId(id);
+
     return ResponseEntity.ok().body(responses);
   }
 
-  @PutMapping("/admin/cafeterias/{code}/operating-hours")
-  public ResponseEntity<List<OperatingHoursResponse>>  updateOperatingHours(@PathVariable String code,
+  @PatchMapping("/admin/cafeterias/{id}/operating-hours")
+  public ResponseEntity<OperatingHoursResponse>  updateOperatingHoursByCafeteriaId(@PathVariable Long id,
       @RequestBody OperatingHoursRequest request){
-    return ResponseEntity.ok().build();
+
+    OperatingHoursResponse response = operatingHoursService.updateOperatingHoursByCafeteriaId(request, id);
+
+    return ResponseEntity.ok().body(response);
   }
 
-  @DeleteMapping("/admin/cafeterias/{code}/operating-hours")
-    public ResponseEntity<Void> deleteOperatingHours(@PathVariable String code){
+  @DeleteMapping("/admin/cafeterias/{id}/operating-hours")
+    public ResponseEntity<Void> deleteOperatingHoursByCafeteriaId(@PathVariable Long id){
+
+    operatingHoursService.deleteOperatingHoursByCafeteriaId(id);
 
     return ResponseEntity.noContent().build();
   }
