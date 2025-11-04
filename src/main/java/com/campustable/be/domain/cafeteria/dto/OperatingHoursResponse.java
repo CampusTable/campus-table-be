@@ -21,7 +21,7 @@ public class OperatingHoursResponse {
 
   public static OperatingHoursResponse from(OperatingHours operatingHours) {
     return new OperatingHoursResponse(
-        operatingHours.getCafeteria().getCode(),
+        operatingHours.getCafeteria().getName(),
         operatingHours.getDayOfWeek(),
         operatingHours.getOpenTime(),
         operatingHours.getCloseTime()

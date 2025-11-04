@@ -3,7 +3,6 @@ package com.campustable.be.domain.cafeteria.service;
 import com.campustable.be.domain.cafeteria.dto.CafeteriaRequest;
 import com.campustable.be.domain.cafeteria.dto.CafeteriaResponse;
 import com.campustable.be.domain.cafeteria.entity.Cafeteria;
-import com.campustable.be.domain.cafeteria.entity.CafeteriaName;
 import com.campustable.be.domain.cafeteria.repository.CafeteriaRepository;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
