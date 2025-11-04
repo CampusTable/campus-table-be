@@ -28,7 +28,7 @@ public class Cafeteria {
   private Long cafeteriaId;
 
   @Column(length = 100, nullable = false)
-  String name;
+  private String name;
 
   @Column(length = 100)
   private String description;
@@ -38,7 +38,7 @@ public class Cafeteria {
 
   public void update(CafeteriaRequest request){
 
-    if (request.getName() != null && !request.getName().isEmpty()) {
+    if (request.getName() != null && !request.getName().isBlank()) {
       this.name = request.getName();
     }
 
