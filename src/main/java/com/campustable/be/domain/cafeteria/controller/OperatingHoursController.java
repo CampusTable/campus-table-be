@@ -3,6 +3,7 @@ package com.campustable.be.domain.cafeteria.controller;
 import com.campustable.be.domain.cafeteria.dto.OperatingHoursRequest;
 import com.campustable.be.domain.cafeteria.dto.OperatingHoursResponse;
 import com.campustable.be.domain.cafeteria.service.OperatingHoursService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
-public class OperatingHoursController implements OperatingHoursControllerDocs {
+public class OperatingHoursController{
 
   private final OperatingHoursService operatingHoursService;
 
-  @Override
   @PostMapping("/admin/cafeterias/{id}/operating-hours")
   public ResponseEntity<OperatingHoursResponse> createOperatingHoursByCafeteriaId(@PathVariable Long id,
-      @RequestBody OperatingHoursRequest request) {
+      @RequestBody @Valid OperatingHoursRequest request) {
 
     OperatingHoursResponse response = operatingHoursService.createOperatingHoursByCafeteriaId(request, id);
 
@@ -42,7 +42,7 @@ public class OperatingHoursController implements OperatingHoursControllerDocs {
 
   @PatchMapping("/admin/cafeterias/{id}/operating-hours")
   public ResponseEntity<OperatingHoursResponse>  updateOperatingHoursByCafeteriaId(@PathVariable Long id,
-      @RequestBody OperatingHoursRequest request){
+      @RequestBody @Valid OperatingHoursRequest request){
 
     OperatingHoursResponse response = operatingHoursService.updateOperatingHoursByCafeteriaId(request, id);
 

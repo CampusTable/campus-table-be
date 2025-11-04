@@ -38,7 +38,7 @@ public class OperatingHours {
 
   // OperatingHours.java (주인)
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "cafeteria_id") // 외래 키 컬럼 지정
+  @JoinColumn(name = "cafeteria_id", unique = true) // 외래 키 컬럼 지정
   private Cafeteria cafeteria;
 
   @Enumerated(EnumType.STRING)
