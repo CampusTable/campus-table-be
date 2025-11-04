@@ -6,12 +6,15 @@ import com.campustable.be.domain.cafeteria.entity.Cafeteria;
 import com.campustable.be.domain.cafeteria.repository.CafeteriaRepository;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -19,46 +22,61 @@ public class CafeteriaService {
 
   private final CafeteriaRepository cafeteriaRepository;
 
-  public CafeteriaResponse createCafeteria(CafeteriaRequest cafeteriaRequest){
+  public CafeteriaResponse createCafeteria(CafeteriaRequest request){
 
-    //유효하지않은 식당이름 (Enum에 정의되지않음)
-    CafeteriaName cafeteriaName = CafeteriaName.fromName(cafeteriaRequest.getName());
-
-    if (cafeteriaRepository.findByName(cafeteriaRequest.getName()).isPresent()) {
+    if (cafeteriaRepository.findByName(request.getName()).isPresent()){
+      log.error("이름이 중복되는 식당이 이미 존재합니다.");
       throw new CustomException(ErrorCode.CAFETERIA_ALREADY_EXISTS);
     }
-    Cafeteria cafeteria = cafeteriaRequest.toEntity(cafeteriaRequest);
+
+    Cafeteria cafeteria = request.toEntity(request);
     return CafeteriaResponse.from(cafeteriaRepository.save(cafeteria));
   }
 
   @Transactional(readOnly = true)
-  public CafeteriaResponse findCafeteriaByCode(String code){
+  public CafeteriaResponse findCafeteria(Long id){
 
-    CafeteriaName cafeteriaName = CafeteriaName.fromCode(code);
+    Optional<Cafeteria> cafeteria = cafeteriaRepository.findById(id);
+    if (cafeteria.isEmpty()) {
+      log.error("id에 해당하는 식당이 존재하지 않습니다.");
+      throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
+    }
 
-    Cafeteria cafeteria = cafeteriaRepository.findByName(cafeteriaName.getName())
-        .orElseThrow(()-> new CustomException(ErrorCode.CAFETERIA_NOT_FOUND));
-
-    return CafeteriaResponse.from(cafeteria);
+    return CafeteriaResponse.from(cafeteria.get());
   }
 
-  public CafeteriaResponse updateCafeteria(String code, CafeteriaRequest request){
+  @Transactional(readOnly = true)
+  public List<CafeteriaResponse> findAllCafeteria(){
 
-    CafeteriaName cafeteriaName = CafeteriaName.fromCode(code);
+    List<Cafeteria> cafeteria = cafeteriaRepository.findAll();
 
-    Cafeteria existingCafeteria = cafeteriaRepository.findByName(cafeteriaName.getName())
-        .orElseThrow(() -> new CustomException(ErrorCode.CAFETERIA_NOT_FOUND));
-    existingCafeteria.update(request);
-    return CafeteriaResponse.from(cafeteriaRepository.save(existingCafeteria));
+    return cafeteria.stream()
+        .map(CafeteriaResponse::from)
+        .toList();
   }
 
-  public void deleteCafeteria(@PathVariable String code){
+  public CafeteriaResponse updateCafeteria(CafeteriaRequest request, Long id){
 
-    //enum에 code(key)가 존재하는지 확인하고 존재하지않는경우 에러를 발생시킨다.
-    CafeteriaName cafeteriaName = CafeteriaName.fromCode(code);
+    Optional<Cafeteria> cafeteria = cafeteriaRepository.findById(id);
 
-    Cafeteria existringCafeteria = cafeteriaRepository.findByName(cafeteriaName.getName())
-        .orElseThrow(() -> new CustomException(ErrorCode.CAFETERIA_NOT_FOUND));
-    cafeteriaRepository.delete(existringCafeteria);
+    if (cafeteria.isEmpty()){
+      log.error("updateCafeteria: 요청body의 id:{}가 식당테이블에 존재하지않습니다.", id);
+      throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
+    }
+
+    cafeteria.get().update(request);
+
+    return CafeteriaResponse.from(cafeteriaRepository.save(cafeteria.get()));
+  }
+
+  public void deleteCafeteria(Long id){
+
+    Optional<Cafeteria> cafeteria = cafeteriaRepository.findById(id);
+    if (cafeteria.isEmpty()){
+      log.error("deleteCafeteria: 요청id:{}가 식당테이블에 존재하지않습니다.",id);
+      throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
+    }
+
+    cafeteriaRepository.delete(cafeteria.get());
   }
 }

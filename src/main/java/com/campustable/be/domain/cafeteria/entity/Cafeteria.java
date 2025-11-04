@@ -3,6 +3,8 @@ package com.campustable.be.domain.cafeteria.entity;
 import com.campustable.be.domain.cafeteria.dto.CafeteriaRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,8 +29,8 @@ public class Cafeteria {
   @Column(name = "cafeteria_id")
   private Long cafeteriaId;
 
-  @Column(nullable = false, length = 20)
-  private String name;
+  @Column(length = 100, nullable = false)
+  String name;
 
   @Column(length = 100)
   private String description;
