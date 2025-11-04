@@ -4,7 +4,6 @@ import com.campustable.be.domain.cafeteria.dto.CafeteriaRequest;
 import com.campustable.be.domain.cafeteria.dto.CafeteriaResponse;
 import com.campustable.be.domain.cafeteria.service.CafeteriaService;
 import com.campustable.be.global.aop.LogMonitoringInvocation;
-import java.nio.file.Path;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

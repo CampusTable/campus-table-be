@@ -3,8 +3,6 @@ package com.campustable.be.domain.cafeteria.entity;
 import com.campustable.be.domain.cafeteria.dto.CafeteriaRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -40,7 +38,7 @@ public class Cafeteria {
 
   public void update(CafeteriaRequest request){
 
-    if (request.getName() != null) {
+    if (request.getName() != null && !request.getName().isEmpty()) {
       this.name = request.getName();
     }
 
