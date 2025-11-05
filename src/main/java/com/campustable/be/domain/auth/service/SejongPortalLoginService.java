@@ -2,9 +2,8 @@ package com.campustable.be.domain.auth.service;
 
 import com.campustable.be.domain.auth.dto.LoginRequest;
 import com.campustable.be.domain.auth.dto.SejongMemberInfo;
-import com.campustable.be.domain.auth.exception.AuthenticationFailedException;
-import com.campustable.be.domain.auth.exception.ScrapingStructureChangedException;
-import com.campustable.be.domain.auth.exception.SsoAuthenticationException;
+import com.campustable.be.global.exception.CustomException;
+import com.campustable.be.global.exception.ErrorCode;
 import java.io.IOException;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -51,7 +50,7 @@ public class SejongPortalLoginService {
 
       if (!statusResp.isSuccessful()) {
         // sso가 제대로 되지않은경우
-        throw new SsoAuthenticationException();
+        throw new CustomException(ErrorCode.SSO_AUTH_FAILED);
       }
 
         String html = statusResp.body().string();
@@ -64,11 +63,11 @@ public class SejongPortalLoginService {
    * HTML 파싱
    */
   private SejongMemberInfo parseStudentInfo(String html) {
-    Document doc = null;
+    Document doc;
     try {
       doc = Jsoup.parse(html);
     } catch (Exception e) {
-      throw new ScrapingStructureChangedException();
+      throw new CustomException(ErrorCode.SCRAPING_STRUCTURE_CHANGED);
     }
 
     String studentId = null;
@@ -91,7 +90,7 @@ public class SejongPortalLoginService {
     // 🌟 핵심 수정: 데이터 추출에 실패한 경우 예외 발생 🌟
     if (studentId == null || studentName == null) {
       // SSO 인증은 성공했지만, 파싱 로직이 깨졌거나 (선택자 문제) 데이터가 없는 경우 (예외적인 상태) 입니다.
-      throw new ScrapingStructureChangedException();
+      throw new CustomException(ErrorCode.SCRAPING_STRUCTURE_CHANGED);
     }
 
     // 성공 시, 정상적인 MemberInfo 객체를 반환합니다.
@@ -141,7 +140,7 @@ public class SejongPortalLoginService {
     // 2. 인증 성공 쿠키가 설정되지 않았다면 실패로 간주
     if (!authCookieFound) {
       // ID/PW 불일치로 인해 SSO 인증 쿠키 획득 실패
-      throw new AuthenticationFailedException();
+      throw new CustomException(ErrorCode.SSO_AUTH_FAILED);
     }
   }
 

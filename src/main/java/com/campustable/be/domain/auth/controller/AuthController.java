@@ -6,6 +6,8 @@ import com.campustable.be.domain.auth.service.AuthService;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,9 +30,22 @@ public class AuthController {
   public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) throws IOException {
 
     AuthResponse authResponse = authService.login(loginRequest);
+    String refreshToken = authResponse.getRefreshToken();
+
+    ResponseCookie cookie = ResponseCookie.from("refreshToken",refreshToken)
+        .httpOnly(true)
+        .secure(true)
+        .sameSite("Strict")
+        .maxAge(authResponse.getMaxAge())
+        .build();
+
+    authResponse.setRefreshToken(null);
 
     log.info("로그인 성공 - 학번: {}, 신규유저: {}",
         authResponse.getStudentNumber(), authResponse.isNewUser());
-    return ResponseEntity.ok(authResponse);
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.SET_COOKIE, cookie.toString())
+        .body(authResponse);
   }
 }

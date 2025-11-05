@@ -11,5 +11,8 @@ public class AuthResponse {
   String studentNumber;
   String studentName;
   boolean isNewUser;
+  String accessToken;
+  String refreshToken;
+  Long maxAge;
 }
 
