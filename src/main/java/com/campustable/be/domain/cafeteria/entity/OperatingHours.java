@@ -4,10 +4,12 @@ package com.campustable.be.domain.cafeteria.entity;
 import com.campustable.be.domain.cafeteria.dto.OperatingHoursRequest;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,7 +22,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.beans.factory.aot.AotServices.Loader;
 
 @Entity
 @Getter
@@ -38,7 +39,9 @@ public class OperatingHours {
 
   // OperatingHours.java (주인)
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "cafeteria_id", unique = true) // 외래 키 컬럼 지정
+  @JoinColumn(name = "cafeteria_id", unique = true, nullable = false,
+      foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT,
+          foreignKeyDefinition = "FOREIGN KEY (cafeteria_id) REFERENCES cafeterias (cafeteria_id) ON DELETE CASCADE"))
   private Cafeteria cafeteria;
 
   @Enumerated(EnumType.STRING)
