@@ -3,15 +3,18 @@ package com.campustable.be.domain.cafeteria.service;
 import com.campustable.be.domain.cafeteria.dto.CafeteriaRequest;
 import com.campustable.be.domain.cafeteria.dto.CafeteriaResponse;
 import com.campustable.be.domain.cafeteria.entity.Cafeteria;
-import com.campustable.be.domain.cafeteria.exception.CafeteriaAlreadyExistsException;
-import com.campustable.be.domain.cafeteria.exception.CafeteriaNotFoundException;
 import com.campustable.be.domain.cafeteria.repository.CafeteriaRepository;
+import com.campustable.be.global.exception.CustomException;
+import com.campustable.be.global.exception.ErrorCode;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -19,43 +22,61 @@ public class CafeteriaService {
 
   private final CafeteriaRepository cafeteriaRepository;
 
-  @Transactional(readOnly = true)
-  public CafeteriaResponse findCafeteriaByCode(String code){
-    Cafeteria cafeteria = cafeteriaRepository.findByCode(code)
-        .orElseThrow(()-> new CafeteriaNotFoundException());
+  public CafeteriaResponse createCafeteria(CafeteriaRequest request){
 
-    return CafeteriaResponse.from(cafeteria);
-  }
-
-  public CafeteriaResponse createCafeteria(CafeteriaRequest cafeteriaRequest){
-    if (cafeteriaRepository.findByCode(cafeteriaRequest.getCode()).isPresent()) {
-      throw new CafeteriaAlreadyExistsException();
+    if (cafeteriaRepository.findByName(request.getName()).isPresent()){
+      log.error("이름이 중복되는 식당이 이미 존재합니다.");
+      throw new CustomException(ErrorCode.CAFETERIA_ALREADY_EXISTS);
     }
-    Cafeteria cafeteria = toEntity(cafeteriaRequest);
+
+    Cafeteria cafeteria = request.toEntity(request);
     return CafeteriaResponse.from(cafeteriaRepository.save(cafeteria));
   }
 
-  public CafeteriaResponse updateCafeteria(String code, CafeteriaRequest request){
-    Cafeteria existingCafeteria = cafeteriaRepository.findByCode(code)
-        .orElseThrow(() -> new CafeteriaNotFoundException());
-    existingCafeteria.update(request);
-    return CafeteriaResponse.from(cafeteriaRepository.save(existingCafeteria));
+  @Transactional(readOnly = true)
+  public CafeteriaResponse findCafeteria(Long id){
+
+    Optional<Cafeteria> cafeteria = cafeteriaRepository.findById(id);
+    if (cafeteria.isEmpty()) {
+      log.error("id에 해당하는 식당이 존재하지 않습니다.");
+      throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
+    }
+
+    return CafeteriaResponse.from(cafeteria.get());
   }
 
-  public void deleteCafeteria(@PathVariable String code){
-    Cafeteria existringCafeteria = cafeteriaRepository.findByCode(code)
-        .orElseThrow(() -> new CafeteriaNotFoundException());
-    cafeteriaRepository.delete(existringCafeteria);
+  @Transactional(readOnly = true)
+  public List<CafeteriaResponse> findAllCafeteria(){
+
+    List<Cafeteria> cafeteria = cafeteriaRepository.findAll();
+
+    return cafeteria.stream()
+        .map(CafeteriaResponse::from)
+        .toList();
   }
 
-  private Cafeteria toEntity(CafeteriaRequest request) {
-    // Cafeteria 엔티티에 Builder 패턴이 구현되어 있다고 가정합니다.
-    // DTO에서 엔티티로 변환할 때는 ID 필드 제외하고 나머지 필드만 사용합니다.
-    return Cafeteria.builder()
-        .code(request.getCode())
-        .name(request.getName())
-        .address(request.getAddress())
-        .description(request.getDescription())
-        .build();
+  public CafeteriaResponse updateCafeteria(CafeteriaRequest request, Long id){
+
+    Optional<Cafeteria> cafeteria = cafeteriaRepository.findById(id);
+
+    if (cafeteria.isEmpty()){
+      log.error("updateCafeteria: 요청body의 id:{}가 식당테이블에 존재하지않습니다.", id);
+      throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
+    }
+
+    cafeteria.get().update(request);
+
+    return CafeteriaResponse.from(cafeteriaRepository.save(cafeteria.get()));
+  }
+
+  public void deleteCafeteria(Long id){
+
+    Optional<Cafeteria> cafeteria = cafeteriaRepository.findById(id);
+    if (cafeteria.isEmpty()){
+      log.error("deleteCafeteria: 요청id:{}가 식당테이블에 존재하지않습니다.",id);
+      throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
+    }
+
+    cafeteriaRepository.delete(cafeteria.get());
   }
 }
