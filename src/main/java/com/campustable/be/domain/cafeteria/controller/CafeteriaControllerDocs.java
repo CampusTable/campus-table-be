@@ -3,148 +3,145 @@ package com.campustable.be.domain.cafeteria.controller;
 import com.campustable.be.domain.cafeteria.dto.CafeteriaRequest;
 import com.campustable.be.domain.cafeteria.dto.CafeteriaResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn; // Parameter 위치 명시를 위한 Import 추가
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody; // Swagger RequestBody 사용을 위한 Import
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping; // HTTP Method 매핑 Import
-import org.springframework.web.bind.annotation.GetMapping; // HTTP Method 매핑 Import
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping; // HTTP Method 매핑 Import
-import org.springframework.web.bind.annotation.PutMapping; // HTTP Method 매핑 Import
+import org.springframework.web.bind.annotation.RequestBody;
+import java.util.List;
 
-// API 그룹 태그 설정
-@Tag(name = "01. Cafeteria Management", description = "식당 정보 조회 및 관리 API")
 public interface CafeteriaControllerDocs {
 
-  // GET /cafeterias/{code}
   @Operation(
-      summary = "식당 상세 정보 조회",
+      summary = "식당 등록",
       description = """
-          식당의 고유 코드(code)를 사용하여 해당 식당의 상세 정보를 조회합니다.
-          
-          ### 요청파라미터
-          -**`code`** (String): 식당의 비즈니스 고유 코드입니다. (예: HAKGWAN, JINGWAN, GUNJAGWAN)
-          
-          ### 반환값 
-          -**`CafeteriaResponse`**
-          - **id** (Long): 식당의 기술적 Primary Key. 관리자 기능(수정/삭제)에 사용될 수 있습니다.
-          //... (이하 반환값 상세 생략)
-          
-          **주의:** 메뉴나 운영 시간 정보는 포함되지 않으며, 별도의 API 호출이 필요합니다.
-          """,
-      parameters = {
-          @Parameter(name = "code", description = "조회할 식당의 고유 코드", example = "HAKGWAN", in = ParameterIn.PATH) // in=PATH 명시
-      },
-      responses = {
-          @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = CafeteriaResponse.class))),
-          @ApiResponse(responseCode = "404", description = "해당 코드의 식당을 찾을 수 없음", content = @Content)
-      }
-  )
-  @GetMapping("cafeterias/{code}")
-  public ResponseEntity<CafeteriaResponse> getCafeteriaByCode(@PathVariable String code);
+            ### 요청 파라미터
+            - `name` (String, required): 사용자에게 표시되는 식당 이름 (예: 학생회관, 진관, 군자관)
+            - `description` (String, optional): 식당의 간략한 설명
+            - `address` (String, optional): 식당의 위치 주소
 
-  // POST /admin/cafeterias
+            ### 응답 데이터
+            - `id` (Long): 생성된 식당의 고유 ID
+            - `name` (String): 식당 이름
+            - `description` (String): 식당 설명
+            - `address` (String): 식당 주소
+
+            ### 사용 방법
+            1. 관리자 권한이 있는 사용자가 `/api/admin/cafeterias` 엔드포인트에 POST 요청을 보냅니다.
+            2. 요청 본문에 `CafeteriaRequest` 형식의 JSON 데이터를 포함합니다.
+            3. 서버는 중복 여부를 검사 후 신규 식당 정보를 저장합니다.
+
+            ### 유의 사항
+            - `name`은 중복될 수 없습니다.
+            - `name` 필드는 반드시 Enum의 DisplayName과 일치해야 합니다.
+            - 중복된 이름일 경우 요청이 거절됩니다.
+
+            ### 예외 처리
+            - `CAFETERIA_ALREADY_EXISTS` (HttpStatus.BAD_REQUEST, "이름이 중복되는 식당이 이미 존재합니다.")
+            """
+  )
+  ResponseEntity<CafeteriaResponse> createCafeteria(@RequestBody CafeteriaRequest request);
+
+
   @Operation(
-      summary = "식당 생성 (관리자 전용)",
+      summary = "단일 식당 조회",
       description = """
-        이 API는 **관리자 권한**이 필요합니다. 새로운 식당 정보를 시스템에 등록합니다.
-       
-        ###  반환값 (HTTP 201 Created)
-        //... (반환값 상세 생략)
-        
-        ** 유의사항:** 요청한 `code`가 이미 존재할 경우, `409 Conflict` 오류가 반환됩니다.
-        """,
-      requestBody = @RequestBody(
-          description = "생성할 식당 정보 (code, name, description, address 포함)",
-          required = true,
-          content = @Content(schema = @Schema(implementation = CafeteriaRequest.class))
-      ),
-      responses = {
-          @ApiResponse(responseCode = "201", description = "식당 생성 성공", content = @Content(schema = @Schema(implementation = CafeteriaResponse.class))),
-          @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
-          @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
-          @ApiResponse(responseCode = "409", description = "요청한 code가 이미 존재함", content = @Content)
-      }
-  )
-  @PostMapping("/admin/cafeterias") // <-- HTTP 매핑 추가
-  public ResponseEntity<CafeteriaResponse> createCafeteria(@org.springframework.web.bind.annotation.RequestBody CafeteriaRequest request);
+            ### 요청 파라미터
+            - `id` (Long, required): 조회할 식당의 고유 ID (PathVariable)
 
-  // PUT /admin/cafeterias/{code}
+            ### 응답 데이터
+            - `id` (Long): 식당의 고유 ID
+            - `name` (String): 식당 이름
+            - `description` (String): 식당 설명
+            - `address` (String): 식당 주소
+
+            ### 사용 방법
+            1. 클라이언트는 `/api/cafeterias/{id}`로 GET 요청을 보냅니다.
+            2. 서버는 해당 ID에 맞는 식당 정보를 반환합니다.
+
+            ### 유의 사항
+            - 존재하지 않는 ID로 요청 시 예외가 발생합니다.
+
+            ### 예외 처리
+            - `CAFETERIA_NOT_FOUND` (HttpStatus.BAD_REQUEST, "id에 해당하는 식당이 존재하지 않습니다.")
+            """
+  )
+  ResponseEntity<CafeteriaResponse> getCafeteria(@PathVariable Long id);
+
+
   @Operation(
-      summary = "식당 정보 수정 (관리자 전용)",
+      summary = "전체 식당 목록 조회",
       description = """
-        이 API는 **관리자 권한**이 필요하며, 특정 식당의 정보를 수정합니다.
-        
-        ### 요청파라미터 (Path Variable)
-          -**`code`** (String): 식당의 비즈니스 고유 코드입니다. (예: HAKGWAN, JINGWAN, GUNJAGWAN)
-        
-        ### 요청 본문 (Request Body)
-        //... (요청 본문 상세 생략)
-        
-        **유의사항:** `code` 필드는 **불변(Immutable)**이므로, 요청 본문에 `code`가 포함되더라도 서버 로직은 이를 무시하고 **URL의 `code`만을 식별자**로 사용해 업데이트를 진행합니다.
-        
-        ###  반환값 (HTTP 200 OK)
-        수정이 완료된 식당의 최신 정보 (`CafeteriaResponse`)를 반환합니다.
-        
-        ###  예상 오류
-        - **404 Not Found:** 해당 `code`를 가진 식당이 존재하지 않는 경우.
-        """,
-      parameters = {
-          @Parameter(name = "code", description = "수정할 식당의 고유 코드", example = "HAKGWAN", in = ParameterIn.PATH), // in=PATH 명시
-      },
-      requestBody = @RequestBody(
-          description = "수정할 식당 정보",
-          required = true,
-          content = @Content(schema = @Schema(implementation = CafeteriaRequest.class))
-      ),
-      responses = {
-          @ApiResponse(responseCode = "200", description = "식당 수정 성공", content = @Content(schema = @Schema(implementation = CafeteriaResponse.class))),
-          @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
-          @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
-          @ApiResponse(responseCode = "404", description = "해당 코드의 식당을 찾을 수 없음", content = @Content)
-      }
+            ### 요청 파라미터
+            - 없음
+
+            ### 응답 데이터
+            - `List<CafeteriaResponse>`: 등록된 모든 식당의 목록
+                - `id` (Long): 식당 ID
+                - `name` (String): 식당 이름
+                - `description` (String): 식당 설명
+                - `address` (String): 식당 주소
+
+            ### 사용 방법
+            1. 클라이언트는 `/api/cafeterias` 엔드포인트로 GET 요청을 보냅니다.
+            2. 서버는 DB에 저장된 모든 식당 정보를 반환합니다.
+
+            ### 유의 사항
+            - 등록된 식당이 없을 경우 빈 배열(`[]`)이 반환됩니다.
+            - 별도의 인증이 필요하지 않습니다.
+            """
   )
-  @PutMapping("/admin/cafeterias/{code}") // <-- HTTP 매핑 추가 (경로 변수 {code} 사용 가정)
-  public ResponseEntity<CafeteriaResponse> updateCafeteria(@PathVariable String code,
-      @org.springframework.web.bind.annotation.RequestBody CafeteriaRequest request);
+  ResponseEntity<List<CafeteriaResponse>> getAllCafeteria();
 
 
-  // DELETE /admin/cafeterias/{code}
   @Operation(
-      summary = "식당 삭제 (관리자 전용)",
+      summary = "식당 정보 수정",
       description = """
-        이 API는 **관리자 권한**이 필요하며, 특정 식당 정보를 영구적으로 삭제합니다.
-        
-        ### 요청파라미터 (Path Variable)
-          -**`code`** (String): 식당의 비즈니스 고유 코드입니다. (예: HAKGWAN, JINGWAN, GUNJAGWAN)
-        
-        ###  반환값 (HTTP 204 No Content)
-        - **성공 시:** **204 No Content** 상태 코드를 반환하며, 본문(Body)은 비어있습니다.
-        
-        ###  외래 키 제약 조건 (중요)
-        - 삭제하려는 식당에 **종속된 운영 시간(`OperatingHours`)이나 메뉴(`Menu`) 데이터가 남아있다면**, DB 제약 조건 위반으로 인해 **`500 Internal Server Error`**가 발생할 수 있습니다. (하위 리소스를 먼저 삭제해야 함)
-        
-        ###  예상 오류
-        - **404 Not Found:** 해당 `code`를 가진 식당이 존재하지 않는 경우.
-        - **500 Internal Server Error:** 외래 키 제약 조건 위반 (DB 오류)
-        """,
-      parameters = {
-          @Parameter(name = "code", description = "삭제할 식당의 고유 코드", example = "HAKGWAN", in = ParameterIn.PATH) // in=PATH 명시
-      },
-      responses = {
-          @ApiResponse(responseCode = "204", description = "삭제 성공 (No Content)"),
-          @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content),
-          @ApiResponse(responseCode = "403", description = "권한 없음", content = @Content),
-          @ApiResponse(responseCode = "404", description = "해당 코드의 식당을 찾을 수 없음", content = @Content),
-          @ApiResponse(responseCode = "500", description = "데이터베이스 외래 키 제약 조건 위반 (하위 리소스 존재)", content = @Content)
-      }
-  )
-  @DeleteMapping("/admin/cafeterias/{code}") // <-- HTTP 매핑 추가 (경로 변수 {code} 사용 가정)
-  public ResponseEntity<Void> deleteCafeteria(@PathVariable String code);
+            ### 요청 파라미터
+            - `id` (Long, required, PathVariable): 수정할 식당의 고유 ID
+            - `name` (String, optional): 변경할 식당 이름
+            - `description` (String, optional): 변경할 설명
+            - `address` (String, optional): 변경할 주소
 
+            ### 응답 데이터
+            - `id` (Long): 수정된 식당의 ID
+            - `name` (String): 수정된 식당 이름
+            - `description` (String): 수정된 설명
+            - `address` (String): 수정된 주소
+
+            ### 사용 방법
+            1. 관리자 권한으로 `/api/admin/cafeterias/{id}`에 PATCH 요청을 보냅니다.
+            2. 요청 본문(`CafeteriaRequest`)에는 수정할 필드만 포함하면 됩니다.
+            3. 서버는 해당 ID의 식당을 찾아 변경 사항을 반영합니다.
+
+            ### 유의 사항
+            - PathVariable의 `id`에 해당하는 식당이 존재하지 않으면 수정이 불가능합니다.
+            - 요청 본문에 `id`는 포함하지 않아도 됩니다.
+
+            ### 예외 처리
+            - `CAFETERIA_NOT_FOUND` (HttpStatus.BAD_REQUEST, "요청id가 식당테이블에 존재하지 않습니다.")
+            """
+  )
+  ResponseEntity<CafeteriaResponse> updateCafeteria(@RequestBody CafeteriaRequest request, @PathVariable Long id);
+
+
+  @Operation(
+      summary = "식당 삭제",
+      description = """
+            ### 요청 파라미터
+            - `id` (Long, required): 삭제할 식당의 고유 ID (PathVariable)
+
+            ### 응답 데이터
+            - 없음 (`204 No Content`)
+
+            ### 사용 방법
+            1. 관리자 권한으로 `/api/admin/cafeterias/{id}`에 DELETE 요청을 보냅니다.
+            2. 해당 ID의 식당이 존재하면 삭제가 수행됩니다.
+
+            ### 유의 사항
+            - 존재하지 않는 ID로 요청 시 삭제가 수행되지 않고 예외가 발생합니다.
+
+            ### 예외 처리
+            - `CAFETERIA_NOT_FOUND` (HttpStatus.BAD_REQUEST, "요청id가 식당테이블에 존재하지 않습니다.")
+            """
+  )
+  ResponseEntity<Void> deleteCafeteria(@PathVariable Long id);
 }
