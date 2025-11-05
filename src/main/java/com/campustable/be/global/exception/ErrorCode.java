@@ -16,6 +16,7 @@ public enum ErrorCode {
 
   ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근이 거부되었습니다."),
 
+  INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "입력 값이 유효하지 않거나 형식이 잘못되었습니다."),
 
   // AUTH
 
