@@ -28,7 +28,7 @@ public class Cafeteria {
   private Long cafeteriaId;
 
   @Column(length = 100, nullable = false)
-  private String name;
+  String name;
 
   @Column(length = 100)
   private String description;
