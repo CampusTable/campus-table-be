@@ -1,5 +1,6 @@
 package com.campustable.be.domain.menu.entity;
 
+import com.campustable.be.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Menu {
+public class Menu extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,13 +23,13 @@ public class Menu {
     private Long id;
 
     @Column(name = "category_id", nullable = false)
-    private Integer categoryId;
+    private Long categoryId;
 
     @Column(name = "menu_name", nullable = false)
     private String menuName;
 
     @Column(nullable = false)
-    private BigDecimal price;
+    private Integer price;
 
     @Column(name = "menu_picture", length = 500)
     private String menuPicture;
@@ -38,22 +39,5 @@ public class Menu {
 
     @Column(name = "stock_quantity")
     private Integer stockQuantity;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 
 }

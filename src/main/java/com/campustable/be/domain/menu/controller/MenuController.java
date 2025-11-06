@@ -4,6 +4,7 @@ import com.campustable.be.domain.menu.dto.MenuRequest;
 import com.campustable.be.domain.menu.dto.MenuResponse;
 import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
 import com.campustable.be.domain.menu.service.MenuService;
+import com.campustable.be.global.aop.LogMonitoringInvocation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ public class MenuController implements MenuControllerDocs {
 
     @Override
     @GetMapping
+    @LogMonitoringInvocation
     public ResponseEntity<List<MenuResponse>> getAllMenus(){
 
         List<MenuResponse> menus = menuService.getAllMenus();
@@ -30,11 +32,12 @@ public class MenuController implements MenuControllerDocs {
     }
 
     @Override
-    @GetMapping("/category/{categoryID}")
+    @LogMonitoringInvocation
+    @GetMapping("/category/{category-id}")
     public ResponseEntity<List<MenuResponse>> getAllMenusByCategoryId(
-           @PathVariable Integer categoryID){
+           @PathVariable(name = "category-id") Long categoryId){
 
-        List<MenuResponse> menus = menuService.getAllMenusByCategory(categoryID);
+        List<MenuResponse> menus = menuService.getAllMenusByCategory(categoryId);
 
         return  ResponseEntity.ok(menus);
 
@@ -42,6 +45,7 @@ public class MenuController implements MenuControllerDocs {
 
     @Override
     @PostMapping
+    @LogMonitoringInvocation
     public ResponseEntity<MenuResponse> createMenu(@RequestBody MenuRequest createRequest){
         MenuResponse createMenu = menuService.createMenu(createRequest);
 
@@ -49,22 +53,24 @@ public class MenuController implements MenuControllerDocs {
     }
 
     @Override
-    @PatchMapping("/{menuID}")
+    @PatchMapping("/{menu-id}")
+    @LogMonitoringInvocation
     public ResponseEntity<MenuResponse> updateMenu(
-            @PathVariable Long menuID,
+            @PathVariable(name = "menu-id") Long menuId,
             @RequestBody MenuUpdateRequest updateRequest){
 
-        MenuResponse updateMenu = menuService.updateMenu(menuID, updateRequest);
+        MenuResponse updateMenu = menuService.updateMenu(menuId, updateRequest);
 
         return ResponseEntity.ok(updateMenu);
     }
 
     @Override
-    @DeleteMapping("/{menuID}")
+    @LogMonitoringInvocation
+    @DeleteMapping("/{menu-id}")
     public ResponseEntity<Void> deleteMenu(
-            @PathVariable Long menuID) {
+            @PathVariable(name = "menu-id") Long menuId) {
 
-        menuService.deleteMenu(menuID);
+        menuService.deleteMenu(menuId);
 
         return ResponseEntity.noContent().build();
     }

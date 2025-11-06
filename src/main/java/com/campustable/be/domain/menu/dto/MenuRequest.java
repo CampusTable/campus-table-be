@@ -10,9 +10,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class MenuRequest {
 
-    private Integer categoryId;
+    private Long categoryId;
     private String menuName;
-    private BigDecimal price;
+    private Integer price;
     private String menuPicture;
     private Boolean available;
     private Integer stockQuantity;

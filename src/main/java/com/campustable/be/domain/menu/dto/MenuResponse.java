@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 public class MenuResponse {
 
     private Long menuId;
-    private Integer categoryId;
+    private Long categoryId;
     private String name;
-    private BigDecimal price;
+    private Integer price;
     private String menuPicture;
     private Boolean available;
     private Integer stockQuantity;

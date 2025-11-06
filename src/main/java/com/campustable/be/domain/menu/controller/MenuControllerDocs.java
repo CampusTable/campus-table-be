@@ -29,7 +29,7 @@ public interface MenuControllerDocs {
     })
     ResponseEntity<List<MenuResponse>> getAllMenusByCategoryId(
             @Parameter(description = "조회할 카테고리 ID", example = "1")
-            Integer categoryID
+            Long categoryId
     );
 
     @Operation(
@@ -38,7 +38,7 @@ public interface MenuControllerDocs {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "메뉴 생성 성공"),
-            @ApiResponse(responseCode = "400", description = "입력값 오류(이름/가격/사용 가능",
+            @ApiResponse(responseCode = "400", description = "입력값 오류(이름/가격/사용 가능)",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "409", description = "해당 카테고리에 이미 존재하는 메뉴입니다.",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
