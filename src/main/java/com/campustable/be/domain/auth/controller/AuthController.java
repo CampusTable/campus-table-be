@@ -4,8 +4,6 @@ import com.campustable.be.domain.auth.dto.AuthResponse;
 import com.campustable.be.domain.auth.dto.LoginRequest;
 import com.campustable.be.domain.auth.service.AuthService;
 import com.campustable.be.global.aop.LogMonitoringInvocation;
-import com.campustable.be.global.exception.CustomException;
-import com.campustable.be.global.exception.ErrorCode;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,14 +58,9 @@ public class AuthController implements AuthControllerDocs {
   @LogMonitoringInvocation
   @PostMapping("/issue")
   public ResponseEntity<AuthResponse> issueAccessToken(
-      @CookieValue(name="refresh_token") String refreshToken) {
+      @CookieValue(name="refreshToken", required = false) String refreshToken) {
 
     log.info("리프레시 토큰을 확인하는 reissue 시도중입니다.");
-
-    if (refreshToken == null || refreshToken.isBlank()) {
-      log.error("리프레시 토큰이 비어있습니다.");
-      throw new CustomException(ErrorCode.REFRESH_TOKEN_NOT_FOUND);
-    }
 
     AuthResponse response = authService.reIssueAccessToken(refreshToken);
 
