@@ -1,6 +1,7 @@
 package com.campustable.be.global.config;
 
 import com.campustable.be.domain.auth.security.JwtAuthenticationFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final ObjectMapper objectMapper;
 
   @Bean
   public PasswordEncoder passWordEncoder(){
@@ -32,6 +34,8 @@ public class SecurityConfig {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .httpBasic(httpBasic-> httpBasic.disable())
         .formLogin(formLogin -> formLogin.disable())
+        .exceptionHandling(handling -> handling
+        .authenticationEntryPoint(new CustomAuthenticationEntryPoint(objectMapper)))
         .authorizeHttpRequests(auth-> auth
             .requestMatchers(
                 "/api/auth/**",
@@ -43,5 +47,4 @@ public class SecurityConfig {
         UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
-
 }

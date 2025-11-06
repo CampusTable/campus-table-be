@@ -49,6 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwt = bearerToken.substring(7); // "Bearer " (7글자) 이후의 토큰 문자열 반환
       } else jwt = null;
 
+      jwtProvider.validateToken(jwt);
       String studentNumber = jwtProvider.getSubject(jwt);
       UserDetails userDetails = userDetailsService.loadUserByUsername(studentNumber);
 

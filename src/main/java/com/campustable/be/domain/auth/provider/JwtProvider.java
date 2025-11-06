@@ -1,8 +1,14 @@
 package com.campustable.be.domain.auth.provider;
 
+import com.campustable.be.global.exception.CustomException;
+import com.campustable.be.global.exception.ErrorCode;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Jwts.SIG;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
@@ -73,19 +79,12 @@ public class JwtProvider {
   }
 
   public void validateToken(String token) {
-
     try {
       Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
-    } catch (io.jsonwebtoken.security.SignatureException e) {
-      log.error("Invalid JWT signature: {}", e.getMessage());
-    } catch (io.jsonwebtoken.MalformedJwtException e) {
-      log.error("Invalid JWT token: {}", e.getMessage());
-    } catch (io.jsonwebtoken.ExpiredJwtException e) {
-      log.error("JWT token is expired: {}", e.getMessage());
-    } catch (io.jsonwebtoken.UnsupportedJwtException e) {
-      log.error("JWT token is unsupported: {}", e.getMessage());
-    } catch (IllegalArgumentException e) {
-      log.error("JWT claims string is empty: {}", e.getMessage());
+    } catch (SignatureException | MalformedJwtException | ExpiredJwtException |
+             UnsupportedJwtException | IllegalArgumentException e) {
+      log.error("JWT 토큰 검증 실패: {} - {}", e.getClass().getSimpleName(), e.getMessage());
+      throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
     }
   }
 }
