@@ -25,6 +25,10 @@ public enum ErrorCode {
 
   SCRAPING_STRUCTURE_CHANGED(HttpStatus.INTERNAL_SERVER_ERROR, "대상 웹사이트의 구조가 변경되어 데이터를 가져올 수 없습니다."),
 
+  INVALID_JWT_TOKEN(HttpStatus.UNAUTHORIZED,"Jwt토큰이 유효기간이 지났거나 올바르지않습니다."),
+
+  REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND,"리프레시토큰이 없습니다. 로그인을통해 재발급받아주세요"),
+
   // Cafeteria
 
   CAFETERIA_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 식당 정보를 찾을 수 없습니다."),

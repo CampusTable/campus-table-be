@@ -58,6 +58,7 @@ public class JwtProvider {
     return Jwts.builder()
         .claim("sub", subject)
         .claim("iat", now)
+        .claim("exp", validity)
         .signWith(secretKey, SIG.HS256)
         .compact();
   }

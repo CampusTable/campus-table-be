@@ -34,3 +34,8 @@ springdoc:
     path: /docs/swagger
 server:
   forward-headers-strategy: framework
+
+jwt:
+  secret: YXdlc29tZV9sb25nX3NlY3JldF9mb3Jfand0X3NpZ25pbmdfa2V5XzIwMjU=
+  expiration-time: 3600000 # 예: 3600000ms = 1시간
+  refresh-expiration-time: 604800000 # 7일
