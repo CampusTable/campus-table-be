@@ -10,7 +10,7 @@ public class MenuUpdateRequest {
 
     private String menuName;
     private Integer price;
-    private String menuPicture;
+    private String menuUrl;
     private Boolean available;
     private Integer stockQuantity;
 //    private Long categoryId;

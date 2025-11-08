@@ -14,7 +14,7 @@ public class MenuResponse {
     private Long categoryId;
     private String name;
     private Integer price;
-    private String menuPicture;
+    private String menuUrl;
     private Boolean available;
     private Integer stockQuantity;
     private LocalDateTime createdDate;
@@ -24,7 +24,7 @@ public class MenuResponse {
         this.categoryId = menu.getCategoryId();
         this.name = menu.getMenuName();
         this.price = menu.getPrice();
-        this.menuPicture = menu.getMenuPicture();
+        this.menuUrl = menu.getMenuUrl();
         this.available = menu.getAvailable();
         this.stockQuantity = menu.getStockQuantity();
         this.createdDate = menu.getCreatedAt();

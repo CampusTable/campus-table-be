@@ -123,8 +123,8 @@ public class MenuService {
     if (requestDto.getPrice() != null) {
       menu.setPrice(requestDto.getPrice());
     }
-    if (requestDto.getMenuPicture() != null && !requestDto.getMenuPicture().isBlank()) {
-      menu.setMenuPicture(requestDto.getMenuPicture());
+    if (requestDto.getMenuUrl() != null && !requestDto.getMenuUrl().isBlank()) {
+      menu.setMenuUrl(requestDto.getMenuUrl());
     }
     if (requestDto.getAvailable() != null) {
       menu.setAvailable(requestDto.getAvailable());

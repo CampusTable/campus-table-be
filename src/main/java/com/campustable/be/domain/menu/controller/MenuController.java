@@ -33,9 +33,9 @@ public class MenuController implements MenuControllerDocs {
 
     @Override
     @LogMonitoringInvocation
-    @GetMapping("/category/{category-id}")
+    @GetMapping("/category/{category_id}")
     public ResponseEntity<List<MenuResponse>> getAllMenusByCategoryId(
-           @PathVariable(name = "category-id") Long categoryId){
+           @PathVariable(name = "category_id") Long categoryId){
 
         List<MenuResponse> menus = menuService.getAllMenusByCategory(categoryId);
 
@@ -53,10 +53,10 @@ public class MenuController implements MenuControllerDocs {
     }
 
     @Override
-    @PatchMapping("/{menu-id}")
+    @PatchMapping("/{menu_id}")
     @LogMonitoringInvocation
     public ResponseEntity<MenuResponse> updateMenu(
-            @PathVariable(name = "menu-id") Long menuId,
+            @PathVariable(name = "menu_id") Long menuId,
             @RequestBody MenuUpdateRequest updateRequest){
 
         MenuResponse updateMenu = menuService.updateMenu(menuId, updateRequest);
@@ -66,9 +66,9 @@ public class MenuController implements MenuControllerDocs {
 
     @Override
     @LogMonitoringInvocation
-    @DeleteMapping("/{menu-id}")
+    @DeleteMapping("/{menu_id}")
     public ResponseEntity<Void> deleteMenu(
-            @PathVariable(name = "menu-id") Long menuId) {
+            @PathVariable(name = "menu_id") Long menuId) {
 
         menuService.deleteMenu(menuId);
 

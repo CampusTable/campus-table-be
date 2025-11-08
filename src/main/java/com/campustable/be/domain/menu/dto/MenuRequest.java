@@ -13,7 +13,7 @@ public class MenuRequest {
     private Long categoryId;
     private String menuName;
     private Integer price;
-    private String menuPicture;
+    private String menuUrl;
     private Boolean available;
     private Integer stockQuantity;
 
@@ -23,7 +23,7 @@ public class MenuRequest {
         menu.setCategoryId(this.categoryId);
         menu.setMenuName(this.menuName);
         menu.setPrice(this.price);
-        menu.setMenuPicture(this.menuPicture);
+        menu.setMenuUrl(this.menuUrl);
         menu.setAvailable(this.available);
         menu.setStockQuantity(this.stockQuantity);
         return menu;
