@@ -1,6 +1,10 @@
 package com.campustable.be.domain.User.entity;
 
+import com.campustable.be.domain.User.dto.UserRequest;
+import com.campustable.be.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,8 +14,10 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class User extends BaseTimeEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,33 +28,24 @@ public class User {
   private String studentNumber;
 
   @Column(nullable = false, length = 10)
-  private String role;
+  private String role = "ROLE_USER";
 
   @Column(name = "user_name", nullable = false, length = 20)
   private String userName;
 
-  @Column(name = "created_at", nullable = false, updatable = false)
-  private LocalDateTime createdAt;
+  @Column(name = "login_id", length = 20, unique = true)
+  private String loginId;
 
-  @Column(name = "updated_at", nullable = false)
-  private LocalDateTime updatedAt;
-
-  @Column(name = "set_profile", nullable = false)
-  private Boolean setProfile = false;
-
-  @PrePersist
-  protected void onCreate() {
-    createdAt = LocalDateTime.now();
-    updatedAt = LocalDateTime.now();
-  }
-
-  @PreUpdate
-  protected void onUpdate() {
-    updatedAt = LocalDateTime.now();
-  }
+  @Column(name = "password", length = 100)
+  private String password = null;
 
   public User(String studentNumber, String role) {
     this.studentNumber = studentNumber;
     this.role = role;
+  }
+
+  //디테일 나중에 처리할게요 비밀번호 해싱도해야함
+  public void update(UserRequest userRequest) {
+    this.password = userRequest.getPassword();
   }
 }

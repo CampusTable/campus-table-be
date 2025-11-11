@@ -13,9 +13,12 @@ import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -60,12 +63,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       SecurityContextHolder.getContext().setAuthentication(authentication);
     }
-    catch (ExpiredJwtException ex) {
-      log.warn("Access Token 만료: {}", ex.getMessage());
-      throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
-    } catch (Exception ex) {
-      log.error("doFilterInternal JWT 인증 처리 중 예외 발생: {}", ex.getMessage());
-      throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
+    catch (CustomException ex) {
+      log.error("jwt필터에서 로깅 토큰에 해당하는 유저가 없거나 토큰이 유효하지않습니다.: {}", ex.getMessage());
+
+      request.setAttribute("exception", ex.getErrorCode().name());
+      throw new AuthenticationException(ex.getMessage()){};
+    }
+    catch (Exception ex) {
+       log.error("유효하지않거나 잘못된 토큰 형식입니다.", ex);
+
     }
 
     chain.doFilter(request, response);
