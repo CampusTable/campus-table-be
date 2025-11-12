@@ -1,6 +1,5 @@
 package com.campustable.be.global.config;
 
-import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +47,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     response.getWriter().write(errorJson);
   }
 
-  // 💡 GlobalExceptionHandler의 ErrorResponse DTO와 동일한 구조여야 합니다.
+  // 💡 GlobalExceptionHandler의 ErrorResponse DTO와 동일한 구조
+  // ErrorResponse Dto를 안가져온이유는 erroCode자료형이 다르고 직렬화를 자동으로 수행안해주니까
   private record ErrorResponse(String errorCode, String errorMessage) {}
 }

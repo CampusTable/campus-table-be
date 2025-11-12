@@ -51,10 +51,6 @@ public class AuthService {
     }
   }
 
-  /**
-   * 기존 사용자 처리 (Effective Login)
-   * - ID/PW 검증만 수행 (빠른 검증)
-   */
   private AuthResponse handleExistingUser(LoginRequest loginRequest, User existingUser) throws IOException {
     log.info("기존 사용자 로그인 시도: {}", loginRequest.getSejongPortalId());
 
@@ -62,17 +58,13 @@ public class AuthService {
 
     sejongPortalLoginService.validateLogin(loginRequest);
 
-    String studentNumber = loginRequest.getSejongPortalId();
-    claims.put("role", existingUser.getRole());
-    String accessToken = jwtProvider.createToken(studentNumber, claims);
-    String refreshToken = jwtProvider.createRefreshToken(studentNumber);
+    String accessToken = jwtProvider.createToken(existingUser);
+    String refreshToken = jwtProvider.createRefreshToken(existingUser);
 
-    RefreshToken refresh = RefreshToken.builder()
-        .token(refreshToken)
-        .expiration(jwtProvider.getRefreshInMs()/1000)
-        .memberId(existingUser.getUserId())
-        .build();
+    RefreshToken refresh = setRefreshToken(refreshToken, existingUser.getUserId());
+
     refreshTokenRepository.save(refresh);
+
     return AuthResponse.builder()
         .studentNumber(loginRequest.getSejongPortalId())
         .studentName(null) // 기존 사용자는 이름 조회 안 함 (성능 최적화)
@@ -91,27 +83,20 @@ public class AuthService {
     SejongMemberInfo memberInfo = sejongPortalLoginService.loginAndGetMemberInfo(loginRequest);
 
     // 트랜잭션 내에서 DB 저장
-    User newUser = new User();
-    newUser.setStudentNumber(memberInfo.getStudentId());
-    newUser.setRole("USER");
-    newUser.setUserName(memberInfo.getStudentName());
-
-    claims.put("role", newUser.getRole());
+    User newUser = User.builder()
+        .studentNumber(memberInfo.getStudentNumber())
+        .userName(memberInfo.getStudentName())
+        .role("USER")
+        .build();
 
     User user = userRepository.save(newUser);
     log.info("신규 사용자 DB 저장 완료: {} {}", user.getStudentNumber(), user.getUserName());
 
-    String accessToken = jwtProvider.createToken(user.getStudentNumber(), claims);
-    String refreshToken = jwtProvider.createRefreshToken(user.getStudentNumber());
+    String accessToken = jwtProvider.createToken(user);
+    String refreshToken = jwtProvider.createRefreshToken(user);
 
-
-    RefreshToken refresh = RefreshToken.builder()
-        .token(refreshToken)
-        .expiration(jwtProvider.getRefreshInMs()/1000)
-        .memberId(user.getUserId())
-        .build();
+    RefreshToken refresh = setRefreshToken(refreshToken, user.getUserId());
     refreshTokenRepository.save(refresh);
-
 
     return AuthResponse.builder()
         .studentNumber(newUser.getStudentNumber())
@@ -123,46 +108,14 @@ public class AuthService {
         .build();
   }
 
-  public AuthResponse reIssueAccessToken(String refreshToken) {
 
-    Optional<RefreshToken> refreshTokenOptional = refreshTokenRepository.findById(refreshToken);
-    if (refreshTokenOptional.isEmpty()) {
-      log.error("reIssueAccessToken Method: 리프레시토큰이 존재하지 않습니다. 로그인페이지로 이동해주세요.");
-      throw new CustomException(ErrorCode.REFRESH_TOKEN_NOT_FOUND);
-    }
-
-    RefreshToken foundToken = refreshTokenOptional.get();
-    refreshTokenRepository.delete(foundToken);
-
-    Long memberId = foundToken.getMemberId();
-    User user = userRepository.findById(memberId)
-        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-    String studentNumber = user.getStudentNumber();
-    String userRole = user.getRole();
-
-    Map<String, Object> claims = new HashMap<>();
-    claims.put("role", userRole);
-
-    String newAccessToken = jwtProvider.createToken(studentNumber, claims);
-    String newRefreshToken = jwtProvider.createRefreshToken(studentNumber);
-
-    refreshTokenRepository.save(RefreshToken.builder()
-        .token(newRefreshToken)
+  private RefreshToken setRefreshToken(String refreshToken, Long userId) {
+    return RefreshToken.builder()
+        .token(refreshToken)
         .expiration(jwtProvider.getRefreshInMs()/1000)
-        .memberId(user.getUserId())
-        .build());
-
-    return AuthResponse.builder()
-        .studentNumber(studentNumber)
-        .studentName(user.getUserName()) // 필요하다면 이름을 다시 반환
-        .isNewUser(false)
-        .accessToken(newAccessToken)
-        .refreshToken(newRefreshToken)
-        .maxAge(jwtProvider.getRefreshInMs() / 1000)
+        .userId(userId)
         .build();
   }
-
 }
 
 

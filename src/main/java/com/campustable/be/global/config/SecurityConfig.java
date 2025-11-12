@@ -20,11 +20,8 @@ public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final ObjectMapper objectMapper;
+  private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-  @Bean
-  public PasswordEncoder passWordEncoder(){
-    return new BCryptPasswordEncoder();
-  }
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,7 +32,7 @@ public class SecurityConfig {
         .httpBasic(httpBasic-> httpBasic.disable())
         .formLogin(formLogin -> formLogin.disable())
         .exceptionHandling(handling -> handling
-        .authenticationEntryPoint(new CustomAuthenticationEntryPoint(objectMapper)))
+            .authenticationEntryPoint(customAuthenticationEntryPoint))
         .authorizeHttpRequests(auth-> auth
             .requestMatchers(
                 "/api/auth/**",

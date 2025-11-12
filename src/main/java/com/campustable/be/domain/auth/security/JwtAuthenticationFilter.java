@@ -45,34 +45,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       HttpServletResponse response,
       FilterChain chain) throws ServletException, IOException {
 
-    try {
-      String jwt;
-      String bearerToken = request.getHeader("Authorization");
-      if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-        jwt = bearerToken.substring(7); // "Bearer " (7글자) 이후의 토큰 문자열 반환
-      } else jwt = null;
+    String jwt;
+    String bearerToken = request.getHeader("Authorization");
+    if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+      jwt = bearerToken.substring(7); // "Bearer " (7글자) 이후의 토큰 문자열 반환
+    } else jwt = null;
 
-      jwtProvider.validateToken(jwt);
-      String studentNumber = jwtProvider.getSubject(jwt);
-      UserDetails userDetails = userDetailsService.loadUserByUsername(studentNumber);
+    jwtProvider.validateToken(jwt);
+    Long studentId = jwtProvider.getSubject(jwt);
+    UserDetails userDetails = userDetailsService.loadUserByUsername(studentId.toString());
 
-      UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-          userDetails, null, userDetails.getAuthorities());
+    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+        userDetails, null, userDetails.getAuthorities());
 
-      authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-      SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-    catch (CustomException ex) {
-      log.error("jwt필터에서 로깅 토큰에 해당하는 유저가 없거나 토큰이 유효하지않습니다.: {}", ex.getMessage());
-
-      request.setAttribute("exception", ex.getErrorCode().name());
-      throw new AuthenticationException(ex.getMessage()){};
-    }
-    catch (Exception ex) {
-       log.error("유효하지않거나 잘못된 토큰 형식입니다.", ex);
-
-    }
+    SecurityContextHolder.getContext().setAuthentication(authentication);
 
     chain.doFilter(request, response);
   }
@@ -80,10 +66,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
 
-    // Context Path를 제외한 실제 요청 URI를 얻습니다.
     String path = new UrlPathHelper().getRequestUri(request);
 
-    // 🚨 2. 요청 경로가 예외 목록 중 하나로 시작하는지 검사
     return EXCLUSION_URL_PATTERNS.stream()
         .anyMatch(path::startsWith);
   }
