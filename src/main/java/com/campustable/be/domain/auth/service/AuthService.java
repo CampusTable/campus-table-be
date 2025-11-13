@@ -12,8 +12,6 @@ import com.campustable.be.domain.auth.repository.RefreshTokenRepository;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,9 +52,7 @@ public class AuthService {
   }
 
   private AuthResponse handleExistingUser(LoginRequest loginRequest, User existingUser) throws IOException {
-    log.info("기존 사용자 로그인 시도: {}", loginRequest.getSejongPortalId());
 
-    Map<String, Object> claims = new HashMap<>();
     String refreshTokenId = UUID.randomUUID().toString();
     String accessTokenId = UUID.randomUUID().toString();
     sejongPortalLoginService.validateLogin(loginRequest);
@@ -81,7 +77,6 @@ public class AuthService {
   public AuthResponse handleNewUser(LoginRequest loginRequest) throws IOException {
     log.info("신규 사용자 온보딩 시도: {}", loginRequest.getSejongPortalId());
 
-    Map<String, Object> claims = new HashMap<>();
     // 외부 포털 API로 ID/PW 검증 + 학생 정보 파싱
     SejongMemberInfo memberInfo = sejongPortalLoginService.loginAndGetMemberInfo(loginRequest);
 

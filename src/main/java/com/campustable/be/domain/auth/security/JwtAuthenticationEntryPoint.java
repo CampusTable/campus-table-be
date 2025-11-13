@@ -28,9 +28,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     log.warn("미인증 요청 감지 (토큰 없음). EntryPoint 실행: {}", authException.getMessage());
 
-    // 토큰이 아예 없는 미인증 상태이므로, '아이디/비밀번호 확인'과 동일한 401 응답으로 처리합니다.
+    // 토큰이 아예 없는 미인증 상태이므로, 로그인으로 리다이렉션 시키기위해 400 응답으로 처리합니다.
     // 클라이언트는 이 401 응답을 보고 로그인 페이지로 리다이렉션합니다.
-    writeErrorResponse(response, ErrorCode.AUTH_FAILED);
+    writeErrorResponse(response, ErrorCode.JWT_INVALID);
   }
 
   // JWT 필터와 동일한 로직을 사용해 응답 형식을 통일합니다.

@@ -8,7 +8,6 @@ import com.campustable.be.global.aop.LogMonitoringInvocation;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.antlr.v4.runtime.Token;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +44,7 @@ public class AuthController implements AuthControllerDocs {
         .sameSite("Strict")
         .maxAge(response.getMaxAge())
         .build();
-
+    log.info(refreshToken);
     response.setRefreshToken(null);
 
     log.info("로그인 성공 - 학번: {}, 신규유저: {}",
