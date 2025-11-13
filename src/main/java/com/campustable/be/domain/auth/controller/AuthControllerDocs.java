@@ -2,6 +2,7 @@ package com.campustable.be.domain.auth.controller;
 
 import com.campustable.be.domain.auth.dto.AuthResponse;
 import com.campustable.be.domain.auth.dto.LoginRequest;
+import com.campustable.be.domain.auth.dto.TokenReissueResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import java.io.IOException;
 import org.springframework.http.ResponseEntity;
@@ -79,8 +80,8 @@ public interface AuthControllerDocs {
         - `INTERNAL_SERVER_ERROR` (500): 서버 내부 오류 발생 시
         """
   )
-  public ResponseEntity<AuthResponse> issueAccessToken(
-      @CookieValue(name="refresh_token") String refreshToken);
+  public ResponseEntity<TokenReissueResponse> issueAccessToken(
+      @CookieValue(name="refreshToken", required = false) String refreshToken);
 
 
 }

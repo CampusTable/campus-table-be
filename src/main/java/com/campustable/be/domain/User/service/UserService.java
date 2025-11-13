@@ -21,6 +21,7 @@ public class UserService {
 
   private final UserRepository userRepository;
 
+  //관리자든 일반유저든 모두 가져옴
   public List<UserResponse> getAllUsers(){
 
     List<User> users = userRepository.findAll();

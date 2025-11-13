@@ -1,5 +1,6 @@
 package com.campustable.be.global.config;
 
+import com.campustable.be.domain.auth.security.JwtAuthenticationEntryPoint;
 import com.campustable.be.domain.auth.security.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +21,9 @@ public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final ObjectMapper objectMapper;
-  private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-
 
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) throws Exception {
     http
         .csrf(csrf -> csrf.disable())
         .sessionManagement(session -> session
@@ -32,7 +31,7 @@ public class SecurityConfig {
         .httpBasic(httpBasic-> httpBasic.disable())
         .formLogin(formLogin -> formLogin.disable())
         .exceptionHandling(handling -> handling
-            .authenticationEntryPoint(customAuthenticationEntryPoint))
+            .authenticationEntryPoint(jwtAuthenticationEntryPoint))
         .authorizeHttpRequests(auth-> auth
             .requestMatchers(
                 "/api/auth/**",

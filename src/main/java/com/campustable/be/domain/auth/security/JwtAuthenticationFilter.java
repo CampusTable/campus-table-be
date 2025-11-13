@@ -1,25 +1,26 @@
 package com.campustable.be.domain.auth.security;
 
 import com.campustable.be.domain.auth.provider.JwtProvider;
+import com.campustable.be.domain.auth.repository.RefreshTokenRepository;
 import com.campustable.be.domain.auth.service.CustomUserDetailService;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -32,6 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtProvider jwtProvider;
   private final CustomUserDetailService userDetailsService;
+  private final ObjectMapper objectMapper;
+  private final RefreshTokenRepository refreshTokenRepository;
   private static final List<String> EXCLUSION_URL_PATTERNS = List.of(
       "/api/auth",
       "/swagger-ui",
@@ -51,14 +54,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       jwt = bearerToken.substring(7); // "Bearer " (7글자) 이후의 토큰 문자열 반환
     } else jwt = null;
 
-    jwtProvider.validateToken(jwt);
-    Long studentId = jwtProvider.getSubject(jwt);
-    UserDetails userDetails = userDetailsService.loadUserByUsername(studentId.toString());
+    if (jwt != null) {
+      try {
+        // 1. Access Token 유효성 검증 (예외 발생 가능 지점)
+        jwtProvider.validateToken(jwt);
 
-    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-        userDetails, null, userDetails.getAuthorities());
+        // 2. 검증 통과 후: 정상 인증 처리
+        Long studentId = jwtProvider.getSubject(jwt);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(studentId.toString());
 
-    SecurityContextHolder.getContext().setAuthentication(authentication);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            userDetails, null, userDetails.getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+      } catch (ExpiredJwtException e) {
+        String refreshToken = extractRefreshTokenFromCookies(request);
+        if (refreshToken != null) {
+          String jti = jwtProvider.getJti(refreshToken);
+          if (refreshTokenRepository.findById(jti).isPresent()) {
+            writeErrorResponse(response, ErrorCode.ACCESS_TOKEN_EXPIRED);
+            return ;
+          }
+        }
+        writeErrorResponse(response, ErrorCode.JWT_INVALID);
+        return ;
+      } catch (CustomException e) {
+        writeErrorResponse(response, e.getErrorCode());
+        return ;
+      }
+      catch (JwtException e) {
+        writeErrorResponse(response, ErrorCode.JWT_INVALID);
+        return ;
+      } catch (Exception e) {
+        // 6. 그 외 예상치 못한 모든 오류
+        log.error("예상치않은 서버의 에러 : {}", e.getMessage(), e);
+        writeErrorResponse(response, ErrorCode.INTERNAL_SERVER_ERROR);
+        return ;
+      }
+    }
 
     chain.doFilter(request, response);
   }
@@ -71,4 +105,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     return EXCLUSION_URL_PATTERNS.stream()
         .anyMatch(path::startsWith);
   }
+
+  private String extractRefreshTokenFromCookies(HttpServletRequest request) {
+    Cookie[] cookies = request.getCookies();
+
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if ("refreshToken".equals(cookie.getName())) {
+          return cookie.getValue(); // Refresh Token 문자열 반환
+        }
+      }
+    }
+    return null; // 토큰을 찾지 못한 경우
+  }
+
+  private void writeErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
+
+    response.setStatus(errorCode.getStatus().value());
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setCharacterEncoding("UTF-8");
+
+    String errorJson = objectMapper.writeValueAsString(
+        new ErrorResponse(
+            errorCode.name(),
+            errorCode.getMessage()
+        )
+    );
+    response.getWriter().write(errorJson);
+  }
+  private record ErrorResponse(String errorCode, String errorMessage) {}
 }
+

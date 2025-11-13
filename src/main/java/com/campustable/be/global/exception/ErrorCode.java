@@ -25,9 +25,12 @@ public enum ErrorCode {
 
   SCRAPING_STRUCTURE_CHANGED(HttpStatus.INTERNAL_SERVER_ERROR, "대상 웹사이트의 구조가 변경되어 데이터를 가져올 수 없습니다."),
 
-  INVALID_JWT_TOKEN(HttpStatus.UNAUTHORIZED,"Jwt토큰이 유효기간이 지났거나 올바르지않습니다."),
+  ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED,"Access Token이 만료되었습니다. 재발급이 필요합니다."),
 
-  REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND,"리프레시토큰이 없습니다. 로그인을통해 재발급받아주세요"),
+  INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,"Access Token이 만료되었습니다. 재발급이 필요합니다."),
+
+  JWT_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 인증 정보입니다. 다시 로그인해 주세요."),
+
 
   // Cafeteria
 

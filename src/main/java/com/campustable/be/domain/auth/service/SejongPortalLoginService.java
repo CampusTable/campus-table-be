@@ -95,7 +95,7 @@ public class SejongPortalLoginService {
 
     // 성공 시, 정상적인 MemberInfo 객체를 반환합니다.
     return SejongMemberInfo.builder()
-        .studentId(studentId)
+        .studentNumber(studentId)
         .studentName(studentName)
         .build();
   }

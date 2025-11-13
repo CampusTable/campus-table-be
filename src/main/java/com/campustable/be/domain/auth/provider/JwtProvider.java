@@ -1,6 +1,7 @@
 package com.campustable.be.domain.auth.provider;
 
 import com.campustable.be.domain.User.entity.User;
+import com.campustable.be.domain.auth.repository.RefreshTokenRepository;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
@@ -14,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.crypto.SecretKey;
 import lombok.Getter;
@@ -36,7 +38,8 @@ public class JwtProvider {
   public JwtProvider(@Value("${jwt.secret}") String secretKeyString,
       @Value("${jwt.expiration-time}") long expirationInMs,
       @Value("${jwt.refresh-expiration-time}") long refreshInMs,
-      RedisTemplate<String, Object> redisTemplate) {
+      RedisTemplate<String, Object> redisTemplate,
+      RefreshTokenRepository refreshTokenRepository) {
     this.secretKeyString = secretKeyString;
     this.expirationInMs = expirationInMs;
     this.refreshInMs = refreshInMs;
@@ -44,7 +47,7 @@ public class JwtProvider {
     this.redisTemplate = redisTemplate;
   }
 
-  public String createToken(User user) {
+  public String createAccessToken(User user, String jti) {
 
     Map<String, Object> claims;
 
@@ -52,16 +55,17 @@ public class JwtProvider {
 
     return Jwts.builder()
         .claims(claims)
+        .claim("jti", jti)
         .signWith(secretKey, Jwts.SIG.HS256)
         .compact();
   }
 
-  public String createRefreshToken(User user) {
+  public String createRefreshToken(User user, String jti) {
 
     Map<String, Object> claims;
 
     claims = setClaims(user, refreshInMs);
-
+    claims.put("jti", jti);
     return Jwts.builder()
         .claims(claims)
         .signWith(secretKey, Jwts.SIG.HS256)
@@ -79,36 +83,28 @@ public class JwtProvider {
           .getPayload()
           .getSubject();
     } catch (JwtException e) {
-        log.error("JwtProvider메서드에서 에러호출 : jwt 파싱실패 혹은 만료 {}", e.getMessage());
-      throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
+        log.error("유효하지않거나 잘못된형식의 jwt {}", e.getMessage());
+      throw new CustomException(ErrorCode.JWT_INVALID);
     }
     if (id == null || id.isBlank()) {
       log.warn("JWT Subject 클레임이 비어 있습니다.");
-      throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
+      throw new CustomException(ErrorCode.JWT_INVALID);
     }
 
     return Long.valueOf(id);
   }
 
   public void validateToken(String token) {
-    try {
-      Jwts.parser().
-          verifyWith(secretKey)
-          .build()
-          .parseSignedClaims(token);
-      if (redisTemplate.hasKey(token)) {
-        log.error("redis블랙리스트에 존재하는 토큰 사용 시도 감지 :{}",token);
-        throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
-      }
-    } catch (ExpiredJwtException e) {
-      log.error("토큰이 만료되었습니다. {}" , e.getMessage());
-      throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
-    } catch (SignatureException e) {
-      log.error("서명이 올바르지않습니다. {}", e.getMessage());
-      throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
-    } catch (MalformedJwtException e) {
-      log.error("잘못된 토큰 구조 {}", e.getMessage());
-      throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
+    Claims claims = Jwts.parser()
+        .verifyWith(secretKey)
+        .build()
+        .parseSignedClaims(token)
+        .getPayload();
+
+    String jti = claims.getId();
+    if (redisTemplate.hasKey(jti)) {
+      log.error("redis블랙리스트에 존재하는 토큰 사용 시도 감지 :{}",token);
+      throw new CustomException(ErrorCode.JWT_INVALID);
     }
   }
 
@@ -144,10 +140,31 @@ public class JwtProvider {
     Long validMs = nowMs + additionalMs / 1000;
 
     claims.put("role", user.getRole());
-    claims.put("id", user.getUserId());
+    claims.put("sub", user.getUserId().toString());
     claims.put("iat", nowMs);
     claims.put("exp", validMs);
 
     return claims;
+  }
+
+  public String getJti(String refreshToken) {
+    try{
+      Claims claims = Jwts.parser().verifyWith(secretKey)
+          .build()
+          .parseSignedClaims(refreshToken)
+          .getPayload();
+      String jti = (String) claims.get("jti");
+      if (jti == null || jti.isBlank()) {
+        log.error("jti가 리프레시토큰에 유효하지않습니다.");
+        throw new CustomException(ErrorCode.JWT_INVALID);
+      }
+      return jti;
+    } catch (ExpiredJwtException e){
+      log.error("refreshToken이 만료되었습니다. {}", e.getMessage());
+      throw new CustomException(ErrorCode.JWT_INVALID);
+    } catch (Exception e) {
+      log.error("refreshToken이 유효하지 않습니다. {}",e.getMessage());
+      throw new CustomException(ErrorCode.JWT_INVALID);
+    }
   }
 }

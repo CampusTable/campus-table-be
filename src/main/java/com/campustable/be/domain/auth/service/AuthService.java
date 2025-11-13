@@ -5,6 +5,7 @@ import com.campustable.be.domain.User.entity.User;
 import com.campustable.be.domain.auth.dto.AuthResponse;
 import com.campustable.be.domain.auth.dto.LoginRequest;
 import com.campustable.be.domain.auth.dto.SejongMemberInfo;
+import com.campustable.be.domain.auth.dto.TokenReissueResponse;
 import com.campustable.be.domain.auth.entity.RefreshToken;
 import com.campustable.be.domain.auth.provider.JwtProvider;
 import com.campustable.be.domain.auth.repository.RefreshTokenRepository;
@@ -13,6 +14,7 @@ import com.campustable.be.global.exception.ErrorCode;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,11 +57,12 @@ public class AuthService {
     log.info("기존 사용자 로그인 시도: {}", loginRequest.getSejongPortalId());
 
     Map<String, Object> claims = new HashMap<>();
-
+    String refreshTokenId = UUID.randomUUID().toString();
+    String accessTokenId = UUID.randomUUID().toString();
     sejongPortalLoginService.validateLogin(loginRequest);
 
-    String accessToken = jwtProvider.createToken(existingUser);
-    String refreshToken = jwtProvider.createRefreshToken(existingUser);
+    String accessToken = jwtProvider.createAccessToken(existingUser, accessTokenId);
+    String refreshToken = jwtProvider.createRefreshToken(existingUser, refreshTokenId);
 
     RefreshToken refresh = setRefreshToken(refreshToken, existingUser.getUserId());
 
@@ -90,12 +93,14 @@ public class AuthService {
         .build();
 
     User user = userRepository.save(newUser);
+    String refreshTokenId = UUID.randomUUID().toString();
+    String accessTokenId = UUID.randomUUID().toString();
     log.info("신규 사용자 DB 저장 완료: {} {}", user.getStudentNumber(), user.getUserName());
 
-    String accessToken = jwtProvider.createToken(user);
-    String refreshToken = jwtProvider.createRefreshToken(user);
+    String accessToken = jwtProvider.createAccessToken(user, accessTokenId);
+    String refreshToken = jwtProvider.createRefreshToken(user, refreshTokenId);
 
-    RefreshToken refresh = setRefreshToken(refreshToken, user.getUserId());
+    RefreshToken refresh = setRefreshToken(refreshTokenId, user.getUserId());
     refreshTokenRepository.save(refresh);
 
     return AuthResponse.builder()
@@ -108,10 +113,36 @@ public class AuthService {
         .build();
   }
 
+  public TokenReissueResponse reissueToken(String refreshToken) {
 
-  private RefreshToken setRefreshToken(String refreshToken, Long userId) {
+    String jti = jwtProvider.getJti(refreshToken);
+
+    RefreshToken existingRefreshToken = refreshTokenRepository.findById(jti)
+        .orElseThrow(()->{
+          log.error("redis에 refreshToken이존재하지 않습니다.");
+          throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        });
+    Long userId = existingRefreshToken.getUserId();
+    refreshTokenRepository.delete(existingRefreshToken);
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(()->{
+          log.error("refreshToken에 해당하는 유저가 존재하지않습니다.");
+          throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        });
+
+    String newJti = UUID.randomUUID().toString(); //refreshtoekn저장할때 jti를 공유해야해서
+    String newAccessToken =  jwtProvider.createAccessToken(user,newJti);
+    String newRefreshToken =  jwtProvider.createRefreshToken(user,newJti);
+    refreshTokenRepository.save(setRefreshToken(newJti, userId));
+    return new TokenReissueResponse(newAccessToken, newRefreshToken,
+        jwtProvider.getRefreshInMs()/1000);
+  }
+
+
+  private RefreshToken setRefreshToken(String jti, Long userId) {
     return RefreshToken.builder()
-        .token(refreshToken)
+        .jti(jti)
         .expiration(jwtProvider.getRefreshInMs()/1000)
         .userId(userId)
         .build();

@@ -2,11 +2,13 @@ package com.campustable.be.domain.auth.controller;
 
 import com.campustable.be.domain.auth.dto.AuthResponse;
 import com.campustable.be.domain.auth.dto.LoginRequest;
+import com.campustable.be.domain.auth.dto.TokenReissueResponse;
 import com.campustable.be.domain.auth.service.AuthService;
 import com.campustable.be.global.aop.LogMonitoringInvocation;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.antlr.v4.runtime.Token;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -57,12 +59,10 @@ public class AuthController implements AuthControllerDocs {
   @Override
   @LogMonitoringInvocation
   @PostMapping("/issue")
-  public ResponseEntity<AuthResponse> issueAccessToken(
+  public ResponseEntity<TokenReissueResponse> issueAccessToken(
       @CookieValue(name="refreshToken", required = false) String refreshToken) {
 
-    log.info("리프레시 토큰을 확인하는 reissue 시도중입니다.");
-
-    AuthResponse response = authService.reIssueAccessToken(refreshToken);
+    TokenReissueResponse response = authService.reissueToken(refreshToken);
 
     String newRefreshToken = response.getRefreshToken();
     ResponseCookie cookie = ResponseCookie.from("refreshToken",newRefreshToken)

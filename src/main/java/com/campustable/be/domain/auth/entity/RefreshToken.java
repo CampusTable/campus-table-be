@@ -15,7 +15,7 @@ import org.springframework.data.redis.core.TimeToLive;
 public class RefreshToken {
 
   @Id
-  private String token; // Refresh Token 값 자체를 키로 사용
+  private String jti; // Refresh Token UUID로 사용할거
 
   private Long userId; // 토큰의 주인이 되는 사용자 ID
 
