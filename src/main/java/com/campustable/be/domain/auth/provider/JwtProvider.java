@@ -1,21 +1,17 @@
 package com.campustable.be.domain.auth.provider;
 
 import com.campustable.be.domain.User.entity.User;
-import com.campustable.be.domain.auth.repository.RefreshTokenRepository;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.crypto.SecretKey;
 import lombok.Getter;
@@ -38,8 +34,7 @@ public class JwtProvider {
   public JwtProvider(@Value("${jwt.secret}") String secretKeyString,
       @Value("${jwt.expiration-time}") long expirationInMs,
       @Value("${jwt.refresh-expiration-time}") long refreshInMs,
-      RedisTemplate<String, Object> redisTemplate,
-      RefreshTokenRepository refreshTokenRepository) {
+      RedisTemplate<String, Object> redisTemplate) {
     this.secretKeyString = secretKeyString;
     this.expirationInMs = expirationInMs;
     this.refreshInMs = refreshInMs;
@@ -108,7 +103,7 @@ public class JwtProvider {
     }
   }
 
-  public Long getExpiration(String token) {
+  public Long getRemainingExpirationSeconds(String token) {
     try {
       Claims claims = Jwts.parser().verifyWith(secretKey)
           .build()
@@ -122,13 +117,6 @@ public class JwtProvider {
     } catch (ExpiredJwtException e) {
       // expiration 0 이면 토큰상태가 어떻게되던 상관없이 같은 동작을 취할거기때문에
       return 0L;
-    }
-  }
-
-  public void setBlackList(String token, Long expiration) {
-    if (expiration > 0){
-      redisTemplate.opsForValue().set(token," logout", expiration, TimeUnit.SECONDS);
-      log.info("access Token 블랙리스트 등록완료. 남은시간 {}ms", expiration);
     }
   }
 

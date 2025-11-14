@@ -60,13 +60,13 @@ public class AuthService {
     String accessToken = jwtProvider.createAccessToken(existingUser, accessTokenId);
     String refreshToken = jwtProvider.createRefreshToken(existingUser, refreshTokenId);
 
-    RefreshToken refresh = setRefreshToken(refreshToken, existingUser.getUserId());
+    RefreshToken refresh = setRefreshToken(refreshTokenId, existingUser.getUserId());
 
     refreshTokenRepository.save(refresh);
 
     return AuthResponse.builder()
         .studentNumber(loginRequest.getSejongPortalId())
-        .studentName(null) // 기존 사용자는 이름 조회 안 함 (성능 최적화)
+        .studentName(existingUser.getUserName())
         .isNewUser(false)
         .accessToken(accessToken)
         .refreshToken(refreshToken)
@@ -126,16 +126,17 @@ public class AuthService {
           throw new CustomException(ErrorCode.USER_NOT_FOUND);
         });
 
-    String newJti = UUID.randomUUID().toString(); //refreshtoekn저장할때 jti를 공유해야해서
-    String newAccessToken =  jwtProvider.createAccessToken(user,newJti);
-    String newRefreshToken =  jwtProvider.createRefreshToken(user,newJti);
-    refreshTokenRepository.save(setRefreshToken(newJti, userId));
+    String accessTokenId = UUID.randomUUID().toString();
+    String refreshTokenId = UUID.randomUUID().toString();
+    String newAccessToken =  jwtProvider.createAccessToken(user,accessTokenId);
+    String newRefreshToken =  jwtProvider.createRefreshToken(user,refreshTokenId);
+    refreshTokenRepository.save(setRefreshToken(refreshTokenId, userId));
     return new TokenReissueResponse(newAccessToken, newRefreshToken,
         jwtProvider.getRefreshInMs()/1000);
   }
 
 
-  private RefreshToken setRefreshToken(String jti, Long userId) {
+  public RefreshToken setRefreshToken(String jti, Long userId) {
     return RefreshToken.builder()
         .jti(jti)
         .expiration(jwtProvider.getRefreshInMs()/1000)

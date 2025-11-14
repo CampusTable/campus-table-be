@@ -4,12 +4,19 @@ import com.campustable.be.domain.User.dto.UserRequest;
 import com.campustable.be.domain.User.dto.UserResponse;
 import com.campustable.be.domain.User.entity.User;
 import com.campustable.be.domain.User.repository.UserRepository;
+import com.campustable.be.domain.auth.dto.AuthResponse;
+import com.campustable.be.domain.auth.entity.RefreshToken;
+import com.campustable.be.domain.auth.provider.JwtProvider;
+import com.campustable.be.domain.auth.repository.RefreshTokenRepository;
+import com.campustable.be.domain.auth.service.AuthService;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
   private final UserRepository userRepository;
+  private final JwtProvider jwtProvider;
+  private final RefreshTokenRepository refreshTokenRepository;
+  private final AuthService authService;
 
   //관리자든 일반유저든 모두 가져옴
   public List<UserResponse> getAllUsers(){
@@ -31,63 +41,77 @@ public class UserService {
         .toList();
   }
 
-  public UserResponse getMyUserInfo(String studentNumber){
+  public UserResponse getMyUserInfo(Long userId){
 
-    User user = userRepository.findByStudentNumber(studentNumber)
+    User user = userRepository.findById(userId)
         .orElseThrow(()->{
-          log.error("토큰은 유효하지만 토큰에 해당하는 유저의학번이 db에존재하지않습니다. {}", studentNumber);
+          log.error("토큰은 유효하지만 토큰에 해당하는 유저의학번이 db에존재하지않습니다. "
+                    + "토큰삭제를 진행합니다.{}", userId);
+
           throw new CustomException(ErrorCode.USER_NOT_FOUND);
         });
 
     return UserResponse.from(user);
   }
 
-  //관리자 만드는 전용으로 사용할 예정입니다.
-  public UserResponse createUser(UserRequest userRequst){
+  public AuthResponse createUser(UserRequest userRequest){
 
-    Optional<User> existingUser = userRepository.findByLoginId(userRequst.getUserId());
+    Optional<User> existingUser = userRepository.findByLoginId(userRequest.getLoginId());
 
-    if (existingUser.isPresent()) {
-      log.error("관리자id가 이미 존재합니다. {}", userRequst.getUserId());
-      throw new CustomException(ErrorCode.USER_NOT_FOUND);
+    if (existingUser.isPresent()){
+      throw new CustomException(ErrorCode.USEr_ALREADY_EXISTS);
     }
 
-    User user = UserRequest.toEntity(userRequst);
-    return UserResponse.from(userRepository.save(user));
+    User newUser = User.builder()
+        .loginId(userRequest.getLoginId())
+        .role(userRequest.getRole())
+        .build();
+
+    User user = userRepository.save(newUser);
+    String refreshTokenId = UUID.randomUUID().toString();
+    String accessTokenId = UUID.randomUUID().toString();
+
+    String accessToken = jwtProvider.createAccessToken(user, accessTokenId);
+    String refreshToken = jwtProvider.createRefreshToken(user, refreshTokenId);
+
+    RefreshToken refresh = authService.setRefreshToken(refreshTokenId, user.getUserId());
+    refreshTokenRepository.save(refresh);
+
+    return AuthResponse.builder()
+        .isNewUser(true)
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .maxAge(jwtProvider.getRefreshInMs()/1000)
+        .build();
+
   }
 
-  //관리자 업데이트 전용으로 사용할 예정입니다.
-  public UserResponse updateUser(UserRequest userRequst){
+  public UserResponse updateUser(UserRequest userRequest){
 
-    User existingUser = userRepository.findByLoginId(userRequst.getUserId())
+    Long userId = Long.valueOf(SecurityContextHolder.getContext()
+        .getAuthentication().getName());
+
+    User existingUser = userRepository.findById(userId)
         .orElseThrow(()->{
-          log.error("유저가 존재하지않습니다. {}", userRequst.getUserId());
+          log.error("유저가 존재하지않습니다. {}", userId);
           throw new CustomException(ErrorCode.USER_NOT_FOUND);
         });
 
-    existingUser.update(userRequst);
+    existingUser.update(userRequest);
     return UserResponse.from(userRepository.save(existingUser));
   }
 
-  //관리자가 특정 유저의 id를 인자로받아 삭제하는 메서드
-  public void deleteUserById(Long userId){
+  //관리자가 아닌 유저가 자기자신을 지우는메서드
+  public void deleteUser(Long userId) {
+
     User user = userRepository.findById(userId)
         .orElseThrow(()->{
-          log.error("유저삭제 진행중 유저가 발견뒤지않았습니다. {}", userId);
+          log.error("토큰은 유효하지만 토큰에 해당하는 userId:{}가 db에 존재하지 않습니다.", userId);
           throw new CustomException(ErrorCode.USER_NOT_FOUND);
         });
 
     userRepository.delete(user);
+    List<RefreshToken> tokensToDelete = refreshTokenRepository.findAllByUserId(userId);
+    refreshTokenRepository.deleteAll(tokensToDelete);
   }
-
-  //관리자가 아닌 유저가 자기자신을 지우는메서드
-  public void deleteUser(String studentNumber){
-    User user = userRepository.findByStudentNumber(studentNumber)
-        .orElseThrow(()->{
-          log.error("토큰은 유효하지만 토큰에 해당하는 유저의학번이 db에존재하지않습니다. {}", studentNumber);
-          throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        });
-    userRepository.delete(user);
-  }
-
 }

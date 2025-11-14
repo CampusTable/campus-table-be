@@ -9,10 +9,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -34,10 +33,14 @@ public class SecurityConfig {
             .authenticationEntryPoint(jwtAuthenticationEntryPoint))
         .authorizeHttpRequests(auth-> auth
             .requestMatchers(
+                "/api/admin/**"
+            ).hasRole("ADMIN") //접두사ROLE_주의
+            .requestMatchers(
                 "/api/auth/**",
                 "/v3/api-docs/**",
                 "/docs/swagger-ui/**",
-                "/swagger-ui.html").permitAll()
+                "/swagger-ui.html",
+                "/api/signup").permitAll()
             .anyRequest().authenticated());
     http.addFilterBefore(jwtAuthenticationFilter,
         UsernamePasswordAuthenticationFilter.class);

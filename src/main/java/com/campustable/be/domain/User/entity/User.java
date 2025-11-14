@@ -39,11 +39,6 @@ public class User extends BaseTimeEntity {
   @Column(name = "password", length = 100)
   private String password = null;
 
-  public User(String studentNumber, String role) {
-    this.studentNumber = studentNumber;
-    this.role = role;
-  }
-
   //디테일 나중에 처리할게요 비밀번호 해싱도해야함
   public void update(UserRequest userRequest) {
     this.password = userRequest.getPassword();

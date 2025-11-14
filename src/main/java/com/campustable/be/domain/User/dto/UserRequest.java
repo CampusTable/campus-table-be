@@ -7,13 +7,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserRequest {
-  private String userId;
+  private String loginId;
   private String password;
   private String role;
 
   public static User toEntity(UserRequest request){
     return User.builder()
-        .loginId(request.getUserId())
+        .loginId(request.getLoginId())
         .password(request.getPassword()) //향후에 암호화해서 저장할예정
         .role(request.getRole())
         .build();

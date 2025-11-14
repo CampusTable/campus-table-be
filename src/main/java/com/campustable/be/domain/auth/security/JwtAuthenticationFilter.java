@@ -53,20 +53,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
       jwt = bearerToken.substring(7); // "Bearer " (7글자) 이후의 토큰 문자열 반환
     } else jwt = null;
-
+    log.info("jwt: {}", jwt);
     if (jwt != null) {
       try {
         // 1. Access Token 유효성 검증 (예외 발생 가능 지점)
         jwtProvider.validateToken(jwt);
 
         // 2. 검증 통과 후: 정상 인증 처리
-        Long studentId = jwtProvider.getSubject(jwt);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(studentId.toString());
+        Long userId = jwtProvider.getSubject(jwt);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(userId.toString());
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
             userDetails, null, userDetails.getAuthorities());
-
+        log.info("authorities: {}", authentication.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
 
       } catch (ExpiredJwtException e) {
         String refreshToken = extractRefreshTokenFromCookies(request);
