@@ -21,11 +21,11 @@ spring:
 
 springdoc:
   servers:
-    - url: http://43.201.107.56:8087
+    - url: https://43.201.107.56:8087
       description: main-server
-    - url: http://43.201.107.56:8088
+    - url: https://43.201.107.56:8088
       description: test-server
-    - url: http://localhost:8080
+    - url: https://localhost:8080
       description: local-server
 
   default-consumes-media-type: application/json;charset=UTF-8
