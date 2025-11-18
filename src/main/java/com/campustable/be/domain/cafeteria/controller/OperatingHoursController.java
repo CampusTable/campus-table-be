@@ -39,9 +39,9 @@ public class OperatingHoursController implements OperatingHoursControllerDocs {
   @LogMonitoringInvocation
   @Override
   @GetMapping("/cafeterias/{id}/operating-hours")
-  public ResponseEntity<OperatingHoursResponse> getOperatingHoursByCafeteriaId(@PathVariable Long id) {
+  public ResponseEntity<List<OperatingHoursResponse>> getOperatingHoursByCafeteriaId(@PathVariable Long id) {
 
-    OperatingHoursResponse responses = operatingHoursService.getOperatingHoursByCafeteriaId(id);
+    List<OperatingHoursResponse> responses = operatingHoursService.getOperatingHoursByCafeteriaId(id);
 
     return ResponseEntity.ok().body(responses);
   }
@@ -59,10 +59,10 @@ public class OperatingHoursController implements OperatingHoursControllerDocs {
   @LogMonitoringInvocation
   @Override
   @PatchMapping("/admin/cafeterias/{id}/operating-hours")
-  public ResponseEntity<OperatingHoursResponse>  updateOperatingHoursByCafeteriaId(@PathVariable Long id,
-      @RequestBody @Valid OperatingHoursRequest request){
+  public ResponseEntity<OperatingHoursResponse>  updateOperatingHours(@PathVariable Long id,
+      @RequestBody OperatingHoursRequest request){
 
-    OperatingHoursResponse response = operatingHoursService.updateOperatingHoursByCafeteriaId(request, id);
+    OperatingHoursResponse response = operatingHoursService.updateOperatingHours(request, id);
 
     return ResponseEntity.ok().body(response);
   }
@@ -70,9 +70,9 @@ public class OperatingHoursController implements OperatingHoursControllerDocs {
   @LogMonitoringInvocation
   @Override
   @DeleteMapping("/admin/cafeterias/{id}/operating-hours")
-    public ResponseEntity<Void> deleteOperatingHoursByCafeteriaId(@PathVariable Long id){
+    public ResponseEntity<Void> deleteOperatingHours(@PathVariable Long id){
 
-    operatingHoursService.deleteOperatingHoursByCafeteriaId(id);
+    operatingHoursService.deleteOperatingHours(id);
 
     return ResponseEntity.noContent().build();
   }

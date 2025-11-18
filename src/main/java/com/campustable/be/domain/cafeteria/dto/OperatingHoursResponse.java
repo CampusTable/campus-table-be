@@ -1,4 +1,4 @@
-package com.campustable.be.dto.cafeteria;
+package com.campustable.be.domain.cafeteria.dto;
 
 import com.campustable.be.domain.cafeteria.entity.DayOfWeekEnum;
 import com.campustable.be.domain.cafeteria.entity.OperatingHours;

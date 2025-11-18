@@ -3,6 +3,7 @@ package com.campustable.be.domain.cafeteria.service;
 import com.campustable.be.domain.cafeteria.dto.OperatingHoursRequest;
 import com.campustable.be.domain.cafeteria.dto.OperatingHoursResponse;
 import com.campustable.be.domain.cafeteria.entity.Cafeteria;
+import com.campustable.be.domain.cafeteria.entity.DayOfWeekEnum;
 import com.campustable.be.domain.cafeteria.entity.OperatingHours;
 import com.campustable.be.domain.cafeteria.repository.CafeteriaRepository;
 import com.campustable.be.domain.cafeteria.repository.OperatingHoursRepository;
@@ -32,9 +33,11 @@ public class OperatingHoursService {
           throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
         });
 
-    Optional<OperatingHours> existOperatingHours = operatingHoursRepository.findByCafeteria(cafeteria);
+    DayOfWeekEnum dayOfWeek = request.getDayOfWeek();
+
+    Optional<OperatingHours> existOperatingHours = operatingHoursRepository.findByCafeteriaAndDayOfWeek(cafeteria, dayOfWeek);
     if (existOperatingHours.isPresent()) {
-      log.warn("createOperatingHours: 이미 OperatingHours가 존재합니다. 생성아아닌 수정을 통해 진행해주세요.");
+      log.warn("createOperatingHours: 이미 해당요일의 OperatingHours가 존재합니다. 생성아아닌 수정을 통해 진행해주세요.");
       throw new CustomException(ErrorCode.OPERATING_HOURS_ALREADY_EXISTS);
     }
 
@@ -45,7 +48,7 @@ public class OperatingHoursService {
   }
 
   @Transactional(readOnly = true)
-  public OperatingHoursResponse getOperatingHoursByCafeteriaId(Long id){
+  public List<OperatingHoursResponse> getOperatingHoursByCafeteriaId(Long id){
 
     Cafeteria cafeteria = cafeteriaRepository.findById(id)
         .orElseThrow(()->{
@@ -53,11 +56,12 @@ public class OperatingHoursService {
           throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
         });
 
-    Optional<OperatingHours> operatingHours = operatingHoursRepository.findByCafeteria(cafeteria);
-    if (operatingHours.isEmpty()) {
-      return new OperatingHoursResponse(id);
-    }
-    return OperatingHoursResponse.from(operatingHours.get());
+    List<OperatingHours> operatingHours = operatingHoursRepository.findByCafeteria(cafeteria);
+
+
+    return operatingHours.stream()
+        .map(OperatingHoursResponse::from)
+        .toList();
   }
 
   @Transactional(readOnly = true)
@@ -70,37 +74,23 @@ public class OperatingHoursService {
         .toList();
   }
 
-  public OperatingHoursResponse updateOperatingHoursByCafeteriaId(OperatingHoursRequest request, Long id){
+  public OperatingHoursResponse updateOperatingHours(OperatingHoursRequest request, Long id){
 
-    Cafeteria cafeteria = cafeteriaRepository.findById(id)
-        .orElseThrow(()->{
-          log.warn("updateOperatingHours: 유효하지않은 cafe id");
-          throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
-        });
-
-    Optional<OperatingHours> operatingHours = operatingHoursRepository.findByCafeteria(cafeteria);
-
+    Optional<OperatingHours> operatingHours = operatingHoursRepository.findById(id);
     if (operatingHours.isEmpty()){
-      OperatingHours newOperatingHours = request.toEntity(cafeteria);
-      newOperatingHours =  operatingHoursRepository.save(newOperatingHours);
-      return OperatingHoursResponse.from(newOperatingHours);
+      log.error("operatingHoursId not found {}", id);
+      throw new CustomException(ErrorCode.OPERATING_HOURS_NOT_FOUND);
     }
 
     operatingHours.get().update(request);
     return OperatingHoursResponse.from(operatingHours.get());
   }
 
-  public void deleteOperatingHoursByCafeteriaId(Long id){
+  public void deleteOperatingHours(Long id){
 
-    Cafeteria cafeteria = cafeteriaRepository.findById(id)
-        .orElseThrow(()->{
-          log.warn("deleteOperatingHours: 유효하지않은 cafe id");
-          throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
-        });
-
-    Optional<OperatingHours> operatingHours = operatingHoursRepository.findByCafeteria(cafeteria);
+    Optional<OperatingHours> operatingHours = operatingHoursRepository.findById(id);
     if (operatingHours.isEmpty()){
-      log.warn("deleteOperatingHoursByCafeteriaId: 식당 ID {}에 삭제할 운영 시간 기록이 없습니다.", id);
+      log.warn("operatingHoursId : {} 가 존재하지않습니다.", id);
     }
     else {
       operatingHoursRepository.delete(operatingHours.get());

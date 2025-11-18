@@ -32,6 +32,8 @@ public enum ErrorCode {
 
   CAFETERIA_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 식당 코드입니다."),
 
+  OPERATING_HOURS_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 운영시간 정보를 찾을 수 없습니다."),
+
   OPERATING_HOURS_ALREADY_EXISTS(HttpStatus.NOT_FOUND, "이미 존재하는 운영시간입니다.");
 
   private final HttpStatus status;

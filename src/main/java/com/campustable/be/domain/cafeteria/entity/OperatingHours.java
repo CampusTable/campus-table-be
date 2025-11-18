@@ -14,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalTime;
@@ -37,9 +38,8 @@ public class OperatingHours {
   @Column(name = "operating_id")
   private Long operatingId;
 
-  // OperatingHours.java (주인)
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "cafeteria_id", unique = true, nullable = false,
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "cafeteria_id", nullable = false,
       foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT,
           foreignKeyDefinition = "FOREIGN KEY (cafeteria_id) REFERENCES cafeterias (cafeteria_id) ON DELETE CASCADE"))
   private Cafeteria cafeteria;
@@ -48,11 +48,11 @@ public class OperatingHours {
   @Column(name = "day_of_week", nullable = false, length = 3)
   private DayOfWeekEnum dayOfWeek;
 
-  @Column(name = "break_open_time", nullable = false)
+  @Column(name = "break_open_time")
   @JsonFormat(pattern="HH:mm")
   private LocalTime breaksStartTime;
 
-  @Column(name = "break_close_time", nullable = false)
+  @Column(name = "break_close_time")
   @JsonFormat(pattern="HH:mm")
   private LocalTime breaksCloseTime;
 
