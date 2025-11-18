@@ -54,10 +54,9 @@ public class AuthService {
   private AuthResponse handleExistingUser(LoginRequest loginRequest, User existingUser) throws IOException {
 
     String refreshTokenId = UUID.randomUUID().toString();
-    String accessTokenId = UUID.randomUUID().toString();
     sejongPortalLoginService.validateLogin(loginRequest);
 
-    String accessToken = jwtProvider.createAccessToken(existingUser, accessTokenId);
+    String accessToken = jwtProvider.createAccessToken(existingUser);
     String refreshToken = jwtProvider.createRefreshToken(existingUser, refreshTokenId);
 
     RefreshToken refresh = setRefreshToken(refreshTokenId, existingUser.getUserId());
@@ -89,10 +88,9 @@ public class AuthService {
 
     User user = userRepository.save(newUser);
     String refreshTokenId = UUID.randomUUID().toString();
-    String accessTokenId = UUID.randomUUID().toString();
     log.info("신규 사용자 DB 저장 완료: {} {}", user.getStudentNumber(), user.getUserName());
 
-    String accessToken = jwtProvider.createAccessToken(user, accessTokenId);
+    String accessToken = jwtProvider.createAccessToken(user);
     String refreshToken = jwtProvider.createRefreshToken(user, refreshTokenId);
 
     RefreshToken refresh = setRefreshToken(refreshTokenId, user.getUserId());
@@ -115,7 +113,7 @@ public class AuthService {
     RefreshToken existingRefreshToken = refreshTokenRepository.findById(jti)
         .orElseThrow(()->{
           log.error("redis에 refreshToken이존재하지 않습니다.");
-          throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+          throw new CustomException(ErrorCode.JWT_INVALID);
         });
     Long userId = existingRefreshToken.getUserId();
     refreshTokenRepository.delete(existingRefreshToken);
@@ -126,9 +124,8 @@ public class AuthService {
           throw new CustomException(ErrorCode.USER_NOT_FOUND);
         });
 
-    String accessTokenId = UUID.randomUUID().toString();
     String refreshTokenId = UUID.randomUUID().toString();
-    String newAccessToken =  jwtProvider.createAccessToken(user,accessTokenId);
+    String newAccessToken =  jwtProvider.createAccessToken(user);
     String newRefreshToken =  jwtProvider.createRefreshToken(user,refreshTokenId);
     refreshTokenRepository.save(setRefreshToken(refreshTokenId, userId));
     return new TokenReissueResponse(newAccessToken, newRefreshToken,

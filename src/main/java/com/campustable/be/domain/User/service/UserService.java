@@ -59,7 +59,7 @@ public class UserService {
     Optional<User> existingUser = userRepository.findByLoginId(userRequest.getLoginId());
 
     if (existingUser.isPresent()){
-      throw new CustomException(ErrorCode.USEr_ALREADY_EXISTS);
+      throw new CustomException(ErrorCode.USER_ALREADY_EXISTS);
     }
 
     User newUser = User.builder()
@@ -69,9 +69,8 @@ public class UserService {
 
     User user = userRepository.save(newUser);
     String refreshTokenId = UUID.randomUUID().toString();
-    String accessTokenId = UUID.randomUUID().toString();
 
-    String accessToken = jwtProvider.createAccessToken(user, accessTokenId);
+    String accessToken = jwtProvider.createAccessToken(user);
     String refreshToken = jwtProvider.createRefreshToken(user, refreshTokenId);
 
     RefreshToken refresh = authService.setRefreshToken(refreshTokenId, user.getUserId());

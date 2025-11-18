@@ -44,7 +44,7 @@ public class AuthController implements AuthControllerDocs {
         .sameSite("Strict")
         .maxAge(response.getMaxAge())
         .build();
-    log.info(refreshToken);
+
     response.setRefreshToken(null);
 
     log.info("로그인 성공 - 학번: {}, 신규유저: {}",
@@ -63,8 +63,7 @@ public class AuthController implements AuthControllerDocs {
 
     TokenReissueResponse response = authService.reissueToken(refreshToken);
 
-    String newRefreshToken = response.getRefreshToken();
-    ResponseCookie cookie = ResponseCookie.from("refreshToken",newRefreshToken)
+    ResponseCookie cookie = ResponseCookie.from("refreshToken",response.getRefreshToken())
         .httpOnly(true)
         .secure(true)
         .sameSite("Strict")

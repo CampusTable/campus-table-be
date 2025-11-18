@@ -59,15 +59,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 1. Access Token 유효성 검증 (예외 발생 가능 지점)
         jwtProvider.validateToken(jwt);
 
-        // 2. 검증 통과 후: 정상 인증 처리
         Long userId = jwtProvider.getSubject(jwt);
         UserDetails userDetails = userDetailsService.loadUserByUsername(userId.toString());
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
             userDetails, null, userDetails.getAuthorities());
-        log.info("authorities: {}", authentication.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
 
       } catch (ExpiredJwtException e) {
         String refreshToken = extractRefreshTokenFromCookies(request);

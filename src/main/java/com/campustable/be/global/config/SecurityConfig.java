@@ -1,5 +1,6 @@
 package com.campustable.be.global.config;
 
+import com.campustable.be.domain.auth.security.CustomAccessDeniedHandler;
 import com.campustable.be.domain.auth.security.JwtAuthenticationEntryPoint;
 import com.campustable.be.domain.auth.security.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,6 +20,7 @@ import org.springframework.security.web.context.SecurityContextHolderFilter;
 public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final CustomAccessDeniedHandler customAccessDeniedHandler;
   private final ObjectMapper objectMapper;
 
   @Bean
@@ -30,7 +32,8 @@ public class SecurityConfig {
         .httpBasic(httpBasic-> httpBasic.disable())
         .formLogin(formLogin -> formLogin.disable())
         .exceptionHandling(handling -> handling
-            .authenticationEntryPoint(jwtAuthenticationEntryPoint))
+            .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+            .accessDeniedHandler(customAccessDeniedHandler))
         .authorizeHttpRequests(auth-> auth
             .requestMatchers(
                 "/api/admin/**"
