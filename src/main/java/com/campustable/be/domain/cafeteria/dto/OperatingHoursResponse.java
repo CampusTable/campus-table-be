@@ -1,4 +1,4 @@
-package com.campustable.be.domain.cafeteria.dto;
+package com.campustable.be.dto.cafeteria;
 
 import com.campustable.be.domain.cafeteria.entity.DayOfWeekEnum;
 import com.campustable.be.domain.cafeteria.entity.OperatingHours;
@@ -45,7 +45,6 @@ public class OperatingHoursResponse {
     );
   }
 
-  //헬퍼메서드 사용안하기위한 전략으로 식당은 존재하는데 운영시간은 존재하는경우 에러발생하는대신 카페아이디만 반환
   public OperatingHoursResponse(Long id){
     this.CafeteriaId = id;
   }
