@@ -10,6 +10,6 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 public class SejongMemberInfo {
-  private String studentId;
+  private String studentNumber;
   private String studentName;
 }

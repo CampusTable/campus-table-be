@@ -1,18 +1,16 @@
 package com.campustable.be.domain.auth.dto;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@Builder
-public class AuthResponse {
-  String studentNumber;
-  String studentName;
-  boolean isNewUser;
+public class TokenReissueResponse {
   String accessToken;
   String refreshToken;
   Long maxAge;
 }
-
