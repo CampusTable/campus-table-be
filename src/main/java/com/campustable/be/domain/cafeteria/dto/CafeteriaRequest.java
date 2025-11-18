@@ -7,7 +7,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-
 public class CafeteriaRequest {
 
   @Schema(description = "사용자에게 표시되는 식당 이름 (예: 학생회관, 진관, 군자관). 이 값은 반드시 CafeteriaName Enum의 DisplayName과 일치해야 합니다.")
