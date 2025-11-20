@@ -2,34 +2,41 @@ package com.campustable.be.domain.menu.dto;
 
 
 import com.campustable.be.domain.menu.entity.Menu;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import lombok.Setter;
 
 @Getter
+@Setter
+@Builder
+@AllArgsConstructor
 public class MenuResponse {
 
-    private Long menuId;
-    private Long categoryId;
-    private String name;
-    private Integer price;
-    private String menuUrl;
-    private Boolean available;
-    private Integer stockQuantity;
-    private LocalDateTime createdDate;
+  private Long menuId;
+  private Long categoryId;
+  private String name;
+  private Integer price;
+  private String menuUrl;
+  private Boolean available;
+  private Integer stockQuantity;
+  private LocalDateTime createdDate;
 
-    public MenuResponse(Menu menu) {
-        this.menuId = menu.getId();
-        this.categoryId = menu.getCategoryId();
-        this.name = menu.getMenuName();
-        this.price = menu.getPrice();
-        this.menuUrl = menu.getMenuUrl();
-        this.available = menu.getAvailable();
-        this.stockQuantity = menu.getStockQuantity();
-        this.createdDate = menu.getCreatedAt();
-
-    }
+  public static MenuResponse from(Menu menu) {
+    return new MenuResponse(
+        menu.getId(),
+        menu.getCategoryId(),
+        menu.getMenuName(),
+        menu.getPrice(),
+        menu.getMenuUrl(),
+        menu.getAvailable(),
+        menu.getStockQuantity(),
+        menu.getCreatedAt()
+    );
+  }
 
 
 }

@@ -31,22 +31,6 @@ public class MenuService {
   @Transactional
   public MenuResponse createMenu(MenuRequest requestDto) {
 
-    if (requestDto.getMenuName() == null || requestDto.getMenuName().isBlank()) {
-      log.error("메뉴 이름을 확인해 주세요");
-      throw new CustomException(ErrorCode.INVALID_MENU_NAME);
-    }
-    if (requestDto.getPrice() == null || requestDto.getPrice() < 0) {
-      log.error("가격 값을 확인해 주세요");
-      throw new CustomException(ErrorCode.INVALID_MENU_PRICE);
-    }
-    if (requestDto.getAvailable() == null) {
-      log.error("판매 가능 여부를 입력해 주세요");
-      throw new CustomException(ErrorCode.INVALID_MENU_AVAILABILITY);
-    }
-//        if(requestDto.getCategoryId()==null){
-//            throw new CustomException(ErrorCode.INVALID_REQUEST);
-//        }
-
     Optional<Menu> existingMenu = menuRepository.findByCategoryIdAndMenuName(
         requestDto.getCategoryId(),
         requestDto.getMenuName()
@@ -57,11 +41,8 @@ public class MenuService {
       throw new CustomException(ErrorCode.MENU_ALREADY_EXISTS);
     }
 
-    Menu menu = requestDto.toEntity();
-
-    Menu saveMenu = menuRepository.save(menu);
-
-    return new MenuResponse(saveMenu);
+    Menu menu = requestDto.toEntity(requestDto);
+    return MenuResponse.from(menuRepository.save(menu));
 
   }
 
@@ -70,7 +51,9 @@ public class MenuService {
 
     List<Menu> menus = menuRepository.findAll();
 
-    return menus.stream().map(MenuResponse::new).toList();
+    return menus.stream()
+        .map(MenuResponse::from)
+        .toList();
   }
 
   @Transactional(readOnly = true)
@@ -84,7 +67,7 @@ public class MenuService {
       throw new CustomException(ErrorCode.MENU_NOT_FOUND);
     }
 
-    return menus.stream().map(MenuResponse::new).toList();
+    return menus.stream().map(MenuResponse::from).toList();
 
   }
 
@@ -120,20 +103,11 @@ public class MenuService {
       //아니면 바꿔주기
       menu.setMenuName(requestDto.getMenuName());
     }
-    if (requestDto.getPrice() != null) {
-      menu.setPrice(requestDto.getPrice());
-    }
-    if (requestDto.getMenuUrl() != null && !requestDto.getMenuUrl().isBlank()) {
-      menu.setMenuUrl(requestDto.getMenuUrl());
-    }
-    if (requestDto.getAvailable() != null) {
-      menu.setAvailable(requestDto.getAvailable());
-    }
-    if (requestDto.getStockQuantity() != null) {
-      menu.setStockQuantity(requestDto.getStockQuantity());
-    }
 
-    return new MenuResponse(menu);
+    menu.update(requestDto);
+
+    return MenuResponse.from(menuRepository.save(menu));
+
   }
 
 

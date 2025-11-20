@@ -1,6 +1,9 @@
 package com.campustable.be.domain.menu.entity;
 
+import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +16,8 @@ import java.time.LocalDateTime;
 @Table(name = "menu")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class Menu {
 
@@ -54,6 +59,24 @@ public class Menu {
   @PreUpdate
   protected void onUpdate() {
     updatedAt = LocalDateTime.now();
+  }
+
+  public void update(MenuUpdateRequest requestDto) {
+
+    if (requestDto.getPrice() != null) {
+      this.setPrice(requestDto.getPrice());
+    }
+    if (requestDto.getMenuUrl() != null && !requestDto.getMenuUrl().isBlank()) {
+      this.setMenuUrl(requestDto.getMenuUrl());
+    }
+    if (requestDto.getAvailable() != null) {
+      this.setAvailable(requestDto.getAvailable());
+    }
+    if (requestDto.getStockQuantity() != null) {
+      this.setStockQuantity(requestDto.getStockQuantity());
+    }
+
+
   }
 
 }
