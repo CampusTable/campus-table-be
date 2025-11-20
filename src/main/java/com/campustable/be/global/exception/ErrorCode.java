@@ -29,8 +29,6 @@ public enum ErrorCode {
 
   MENU_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 메뉴를 찾을 수 없습니다."),
 
-  CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카테고리를 찾을 수 없습니다."),
-
   INVALID_MENU_NAME(HttpStatus.BAD_REQUEST, "메뉴 이름을 입력해 주세요."),
 
   INVALID_MENU_PRICE(HttpStatus.BAD_REQUEST, "메뉴 가격은 0원 이상이어야 합니다."),
@@ -41,7 +39,13 @@ public enum ErrorCode {
 
   CAFETERIA_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 식당 정보를 찾을 수 없습니다."),
 
-  CAFETERIA_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 식당 코드입니다.");
+  CAFETERIA_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 식당 코드입니다."),
+
+  //Category
+
+  CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카테고리를 찾을 수 없습니다."),
+
+  CATEGORY_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 카테고리입니다.");
 
 
   private final HttpStatus status;
