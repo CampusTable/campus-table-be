@@ -1,6 +1,7 @@
-package com.campustable.be.domain.category;
+package com.campustable.be.domain.category.entity;
 
 import com.campustable.be.domain.cafeteria.entity.Cafeteria;
+import com.campustable.be.domain.category.dto.CategoryRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -28,13 +29,17 @@ public class Category {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "category_id")
-  private Long CategoryId;
+  private Long categoryId;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "cafeteria_id", nullable = false)
-  private Cafeteria cafeteriaId;
+  private Cafeteria cafeteria;
 
   @Column(name = "category_name")
   private String categoryName;
+
+  public void update(CategoryRequest request){
+    this.categoryName = request.getCategoryName();
+  }
 
 }
