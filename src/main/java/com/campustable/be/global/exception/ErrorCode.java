@@ -16,6 +16,7 @@ public enum ErrorCode {
 
   ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근이 거부되었습니다."),
 
+  INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "입력 값이 유효하지 않거나 형식이 잘못되었습니다."),
 
   // AUTH
 
@@ -29,8 +30,11 @@ public enum ErrorCode {
 
   CAFETERIA_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 식당 정보를 찾을 수 없습니다."),
 
-  CAFETERIA_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 식당 코드입니다.");
+  CAFETERIA_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 식당 코드입니다."),
 
+  OPERATING_HOURS_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 운영시간 정보를 찾을 수 없습니다."),
+
+  OPERATING_HOURS_ALREADY_EXISTS(HttpStatus.NOT_FOUND, "이미 존재하는 운영시간입니다.");
 
   private final HttpStatus status;
   private final String message;
