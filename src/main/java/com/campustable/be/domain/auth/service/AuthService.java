@@ -1,11 +1,18 @@
 package com.campustable.be.domain.auth.service;
 
-import com.campustable.be.domain.User.Repository.UserRepository;
-import com.campustable.be.domain.User.entity.User;
+import com.campustable.be.domain.user.repository.UserRepository;
+import com.campustable.be.domain.user.entity.User;
 import com.campustable.be.domain.auth.dto.AuthResponse;
 import com.campustable.be.domain.auth.dto.LoginRequest;
 import com.campustable.be.domain.auth.dto.SejongMemberInfo;
+import com.campustable.be.domain.auth.dto.TokenReissueResponse;
+import com.campustable.be.domain.auth.entity.RefreshToken;
+import com.campustable.be.domain.auth.provider.JwtProvider;
+import com.campustable.be.domain.auth.repository.RefreshTokenRepository;
+import com.campustable.be.global.exception.CustomException;
+import com.campustable.be.global.exception.ErrorCode;
 import java.io.IOException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,17 +23,19 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class AuthService {
 
   private final UserRepository userRepository;
   private final SejongPortalLoginService sejongPortalLoginService;
-
+  private final JwtProvider jwtProvider;
+  private final RefreshTokenRepository refreshTokenRepository;
   /**
    * 통합 로그인 처리 (DB 우선 조회)
    * 1. DB에서 학번으로 사용자 조회
    * 2. 기존사용자와 신규사용자로 분기
    */
-  @Transactional
+
   public AuthResponse login(LoginRequest loginRequest) throws IOException {
     String studentNumber = loginRequest.getSejongPortalId();
 
@@ -35,36 +44,35 @@ public class AuthService {
 
     if (existingUser.isPresent()) {
       // 2-A. 기존 사용자 처리 (Effective Login)
-      return handleExistingUser(loginRequest);
+      return handleExistingUser(loginRequest, existingUser.get());
     } else {
       // 2-B. 신규 사용자 처리 (Onboarding Transaction)
       return handleNewUser(loginRequest);
     }
   }
 
-  /**
-   * 기존 사용자 처리 (Effective Login)
-   * - ID/PW 검증만 수행 (빠른 검증)
-   */
-  private AuthResponse handleExistingUser(LoginRequest loginRequest) throws IOException {
-    log.info("기존 사용자 로그인 시도: {}", loginRequest.getSejongPortalId());
+  private AuthResponse handleExistingUser(LoginRequest loginRequest, User existingUser) throws IOException {
 
-    // 외부 포털 API로 ID/PW 검증만 수행
+    String refreshTokenId = UUID.randomUUID().toString();
     sejongPortalLoginService.validateLogin(loginRequest);
+
+    String accessToken = jwtProvider.createAccessToken(existingUser);
+    String refreshToken = jwtProvider.createRefreshToken(existingUser, refreshTokenId);
+
+    RefreshToken refresh = setRefreshToken(refreshTokenId, existingUser.getUserId());
+
+    refreshTokenRepository.save(refresh);
 
     return AuthResponse.builder()
         .studentNumber(loginRequest.getSejongPortalId())
-        .studentName(null) // 기존 사용자는 이름 조회 안 함 (성능 최적화)
+        .studentName(existingUser.getUserName())
         .isNewUser(false)
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .maxAgeSeconds(jwtProvider.getRefreshInMs()/1000)
         .build();
   }
 
-  /**
-   * 신규 사용자 처리 (Onboarding Transaction)
-   * - ID/PW 검증 + 학생 정보 파싱
-   * - 성공 시 DB 저장
-   */
-  @Transactional
   public AuthResponse handleNewUser(LoginRequest loginRequest) throws IOException {
     log.info("신규 사용자 온보딩 시도: {}", loginRequest.getSejongPortalId());
 
@@ -72,24 +80,66 @@ public class AuthService {
     SejongMemberInfo memberInfo = sejongPortalLoginService.loginAndGetMemberInfo(loginRequest);
 
     // 트랜잭션 내에서 DB 저장
-    User newUser = new User();
-    newUser.setStudentNumber(memberInfo.getStudentId());
-    newUser.setRole("USER");
-    newUser.setUserName(memberInfo.getStudentName());
+    User newUser = User.builder()
+        .studentNumber(memberInfo.getStudentNumber())
+        .userName(memberInfo.getStudentName())
+        .role("USER")
+        .build();
 
-    userRepository.save(newUser);
-    log.info("신규 사용자 DB 저장 완료: {} {}", newUser.getStudentNumber(), newUser.getUserName());
+    User user = userRepository.save(newUser);
+    String refreshTokenId = UUID.randomUUID().toString();
+    log.info("신규 사용자 DB 저장 완료: {} {}", user.getStudentNumber(), user.getUserName());
 
-    // 토큰 생성
+    String accessToken = jwtProvider.createAccessToken(user);
+    String refreshToken = jwtProvider.createRefreshToken(user, refreshTokenId);
 
-    // RefreshToken은 AuthResponse에 포함하지 않음 (컨트롤러에서 쿠키로 처리)
+    RefreshToken refresh = setRefreshToken(refreshTokenId, user.getUserId());
+    refreshTokenRepository.save(refresh);
+
     return AuthResponse.builder()
         .studentNumber(newUser.getStudentNumber())
         .studentName(memberInfo.getStudentName())
         .isNewUser(true)
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .maxAgeSeconds(jwtProvider.getRefreshInMs()/1000)
         .build();
   }
 
+  public TokenReissueResponse reissueToken(String refreshToken) {
+
+    String jti = jwtProvider.getJti(refreshToken);
+
+    RefreshToken existingRefreshToken = refreshTokenRepository.findById(jti)
+        .orElseThrow(()->{
+          log.error("redis에 refreshToken이존재하지 않습니다.");
+          return new CustomException(ErrorCode.JWT_INVALID);
+        });
+    Long userId = existingRefreshToken.getUserId();
+    refreshTokenRepository.delete(existingRefreshToken);
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(()->{
+          log.error("refreshToken에 해당하는 유저가 존재하지않습니다.");
+          return new CustomException(ErrorCode.USER_NOT_FOUND);
+        });
+
+    String refreshTokenId = UUID.randomUUID().toString();
+    String newAccessToken =  jwtProvider.createAccessToken(user);
+    String newRefreshToken =  jwtProvider.createRefreshToken(user,refreshTokenId);
+    refreshTokenRepository.save(setRefreshToken(refreshTokenId, userId));
+    return new TokenReissueResponse(newAccessToken, newRefreshToken,
+        jwtProvider.getRefreshInMs()/1000);
+  }
+
+
+  public RefreshToken setRefreshToken(String jti, Long userId) {
+    return RefreshToken.builder()
+        .jti(jti)
+        .expiration(jwtProvider.getRefreshInMs()/1000)
+        .userId(userId)
+        .build();
+  }
 }
 
 

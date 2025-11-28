@@ -1,13 +1,15 @@
-package com.campustable.be.domain.User.Repository;
+package com.campustable.be.domain.user.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.campustable.be.domain.User.entity.User;
+import com.campustable.be.domain.user.entity.User;
 import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
   Optional<User> findByStudentNumber(String studentNumber);
+
+  Optional<User> findByLoginId(String loginId);
 }
 
