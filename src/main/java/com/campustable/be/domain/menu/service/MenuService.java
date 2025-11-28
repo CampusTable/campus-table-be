@@ -1,6 +1,8 @@
 package com.campustable.be.domain.menu.service;
 
 
+import com.campustable.be.domain.category.entity.Category;
+import com.campustable.be.domain.category.repository.CategoryRepository;
 import com.campustable.be.domain.menu.dto.MenuRequest;
 import com.campustable.be.domain.menu.dto.MenuResponse;
 import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
@@ -26,22 +28,29 @@ import java.util.Optional;
 public class MenuService {
 
   private final MenuRepository menuRepository;
+  private final CategoryRepository categoryRepository;
 
 
   @Transactional
-  public MenuResponse createMenu(MenuRequest requestDto) {
+  public MenuResponse createMenu(MenuRequest request) {
 
-    Optional<Menu> existingMenu = menuRepository.findByCategoryIdAndMenuName(
-        requestDto.getCategoryId(),
-        requestDto.getMenuName()
+    Category category = categoryRepository.findById(request.getCategoryId())
+        .orElseThrow(() -> {
+          log.warn("createMenu: 유효하지 않은 category id");
+          throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
+        });
+
+    Optional<Menu> existingMenu = menuRepository.findByCategoryAndMenuName(
+        category,
+        request.getMenuName()
     );
 
     if (existingMenu.isPresent()) {
-      log.error("메뉴가 해당 식당에 이미 등록되어 있습니다.");
+      log.error("createMenu: 이미 해당 카테고리에 menu가 존재합니다. 생성이 아닌 수정을 통해 진행해주세요.");
       throw new CustomException(ErrorCode.MENU_ALREADY_EXISTS);
     }
 
-    Menu menu = requestDto.toEntity(requestDto);
+    Menu menu = request.toEntity(category);
     return MenuResponse.from(menuRepository.save(menu));
 
   }
@@ -49,9 +58,7 @@ public class MenuService {
   @Transactional(readOnly = true)
   public List<MenuResponse> getAllMenus() {
 
-    List<Menu> menus = menuRepository.findAll();
-
-    return menus.stream()
+    return menuRepository.findAll().stream()
         .map(MenuResponse::from)
         .toList();
   }
@@ -59,13 +66,13 @@ public class MenuService {
   @Transactional(readOnly = true)
   public List<MenuResponse> getAllMenusByCategory(Long categoryId) {
 
-    List<Menu> menus = menuRepository.findByCategoryId(categoryId);
+    Category category = categoryRepository.findById(categoryId)
+        .orElseThrow(() -> {
+          log.warn("getAllMenusByCategory: 유효하지 않은 category id");
+          throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
+        });
 
-    //임시 카테고리 없으면 예외 처리
-    if (menus.isEmpty()) {
-      log.error("해당 카테고리id는 없습니다");
-      throw new CustomException(ErrorCode.MENU_NOT_FOUND);
-    }
+    List<Menu> menus = menuRepository.findByCategory(category);
 
     return menus.stream().map(MenuResponse::from).toList();
 
@@ -73,49 +80,39 @@ public class MenuService {
 
 
   @Transactional
-  public MenuResponse updateMenu(Long menuId, MenuUpdateRequest requestDto) {
+  public MenuResponse updateMenu(Long menuId, MenuUpdateRequest request) {
 
-    Menu menu = menuRepository.findById(menuId)
-        .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
-
-    //예외 처리
-    if (requestDto.getMenuName() != null && requestDto.getMenuName().isBlank()) {
-      log.error("메뉴 이름을 확인해 주세요");
-      throw new CustomException(ErrorCode.INVALID_MENU_NAME);
+    Optional<Menu> menu = menuRepository.findById(menuId);
+    if (menu.isEmpty()) {
+      log.error("menuId not found {}", menuId);
+      throw new CustomException(ErrorCode.MENU_NOT_FOUND);
     }
-    if (requestDto.getPrice() != null && requestDto.getPrice() < 0) {
-      log.error("가격 값을 확인해 주세요");
-      throw new CustomException(ErrorCode.INVALID_MENU_PRICE);
-    }
+    if (request.getMenuName() != null && !request.getMenuName().isBlank() &&
+        !request.getMenuName().equals(menu.get().getMenuName())) {
 
-    // null 아닌것들만  수정 + blank 예외
-    if (requestDto.getMenuName() != null && !requestDto.getMenuName().isBlank()) {
-
-      // 이미 있는 메뉴이면 예외처리
-      Optional<Menu> existingMenu = menuRepository.findByCategoryIdAndMenuName(
-          menu.getCategoryId(),
-          requestDto.getMenuName());
-      if (existingMenu.isPresent()) {
-        log.error("메뉴가 해당 식당에 이미 등록되어 있습니다.");
+      if (menuRepository.findByCategoryAndMenuName(menu.get().getCategory(), request.getMenuName()).isPresent()) {
         throw new CustomException(ErrorCode.MENU_ALREADY_EXISTS);
       }
-
-      //아니면 바꿔주기
-      menu.setMenuName(requestDto.getMenuName());
+      // 중복이 아니면 이름 변경
+      menu.get().setMenuName(request.getMenuName());
     }
 
-    menu.update(requestDto);
-
-    return MenuResponse.from(menuRepository.save(menu));
-
+    menu.get().update(request);
+    return MenuResponse.from(menuRepository.save(menu.get()));
   }
 
 
   @Transactional
   public void deleteMenu(Long menuId) {
 
-    Menu menu = menuRepository.findById(menuId).orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
-
-    menuRepository.deleteById(menuId);
+    Optional<Menu> menu = menuRepository.findById(menuId);
+    if (menu.isEmpty()) {
+      log.error("menuId not found {}", menuId);
+      throw new CustomException(ErrorCode.MENU_NOT_FOUND);
+    } else {
+      menuRepository.delete(menu.get());
+    }
   }
+
 }
+

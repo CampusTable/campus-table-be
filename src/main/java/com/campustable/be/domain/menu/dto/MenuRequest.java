@@ -1,5 +1,6 @@
 package com.campustable.be.domain.menu.dto;
 
+import com.campustable.be.domain.category.entity.Category;
 import com.campustable.be.domain.menu.entity.Menu;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -29,17 +30,18 @@ public class MenuRequest {
 
   @NotNull(message = "판매 가능 여부는 필수입니다.")
   private Boolean available;
+
   private Integer stockQuantity;
 
 
-  public Menu toEntity(MenuRequest menu) {
+  public Menu toEntity(Category category) {
     return Menu.builder()
-        .categoryId(menu.getCategoryId())
-        .menuName(menu.getMenuName())
-        .price(menu.getPrice())
-        .menuUrl(menu.getMenuUrl())
-        .available(menu.getAvailable())
-        .stockQuantity(menu.getStockQuantity())
+        .category(category)
+        .menuName(this.getMenuName())
+        .price(this.getPrice())
+        .menuUrl(this.getMenuUrl())
+        .available(this.getAvailable())
+        .stockQuantity(this.getStockQuantity())
         .build();
   }
 

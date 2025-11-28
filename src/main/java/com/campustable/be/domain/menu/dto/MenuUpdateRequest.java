@@ -13,6 +13,5 @@ public class MenuUpdateRequest {
     private String menuUrl;
     private Boolean available;
     private Integer stockQuantity;
-//    private Long categoryId;
 
 }

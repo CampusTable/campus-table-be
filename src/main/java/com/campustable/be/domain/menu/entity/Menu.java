@@ -1,5 +1,6 @@
 package com.campustable.be.domain.menu.entity;
 
+import com.campustable.be.domain.category.entity.Category;
 import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,8 +27,9 @@ public class Menu {
   @Column(name = "menu_id")
   private Long id;
 
-  @Column(name = "category_id", nullable = false)
-  private Long categoryId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "category_id", nullable = false)
+  private Category category;
 
   @Column(name = "menu_name", nullable = false)
   private String menuName;
