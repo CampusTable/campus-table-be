@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
       jwt = bearerToken.substring(7); // "Bearer " (7글자) 이후의 토큰 문자열 반환
     } else jwt = null;
-    log.info("jwt: {}", jwt);
+    
     if (jwt != null) {
       try {
         // 1. Access Token 유효성 검증 (예외 발생 가능 지점)
