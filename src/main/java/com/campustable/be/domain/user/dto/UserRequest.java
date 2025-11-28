@@ -11,6 +11,12 @@ public class UserRequest {
   private String password;
   private String role;
 
+  /**
+   * Creates a User entity from the request data.
+   *
+   * @param request the UserRequest containing the values to map
+   * @return a User populated with loginId, the request's password as provided, and role
+   */
   public static User toEntity(UserRequest request){
     return User.builder()
         .loginId(request.getLoginId())

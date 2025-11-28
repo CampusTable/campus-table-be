@@ -38,7 +38,14 @@ public class User extends BaseTimeEntity {
   @Column(name = "password", length = 100)
   private String password = null;
 
-  //디테일 나중에 처리할게요 비밀번호 해싱도해야함
+  /**
+   * Set the user's password from the provided request.
+   *
+   * Updates this user's password field to the value returned by {@code userRequest.getPassword()}.
+   * The supplied password is stored as provided; no hashing or additional validation is performed.
+   *
+   * @param userRequest request object containing the new password
+   */
   public void update(UserRequest userRequest) {
     this.password = userRequest.getPassword();
   }

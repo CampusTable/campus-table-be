@@ -37,7 +37,13 @@ public class SejongPortalLoginService {
   }
 
   /**
-   * 2단계: 로그인 성공 후 학생 정보 조회
+   * Retrieve the authenticated student's Sejong member information after validating login.
+   *
+   * @param loginRequest credentials and login parameters used to authenticate with the Sejong portal
+   * @return a SejongMemberInfo populated with the student's number and name
+   * @throws IOException when HTTP requests or network communication fail
+   * @throws CustomException with ErrorCode.SSO_AUTH_FAILED if single sign-on authentication is not established
+   * @throws CustomException with ErrorCode.SCRAPING_STRUCTURE_CHANGED if the expected student information cannot be parsed from the portal HTML
    */
   public SejongMemberInfo loginAndGetMemberInfo(LoginRequest loginRequest) throws IOException {
 
@@ -60,7 +66,15 @@ public class SejongPortalLoginService {
 
 
   /**
-   * HTML 파싱
+   * Extracts the student's number and name from the Sejong portal HTML.
+   *
+   * Parses the provided HTML and returns a SejongMemberInfo populated with the extracted
+   * student number and student name.
+   *
+   * @param html the HTML content of the portal status page containing student information
+   * @return a SejongMemberInfo with `studentNumber` and `studentName` populated
+   * @throws CustomException with ErrorCode.SCRAPING_STRUCTURE_CHANGED if the HTML cannot be parsed
+   *         or if the expected student number/name fields are missing
    */
   private SejongMemberInfo parseStudentInfo(String html) {
     Document doc;
@@ -100,6 +114,13 @@ public class SejongPortalLoginService {
         .build();
   }
 
+  /**
+   * Performs a POST login to the Sejong portal using the provided HTTP client and validates that an SSO authentication cookie was issued.
+   *
+   * @param loginRequestDto DTO containing the Sejong portal credentials (`sejongPortalId`, `sejongPortalPw`)
+   * @throws IOException when an underlying HTTP request or I/O operation fails
+   * @throws CustomException with {@code ErrorCode.SSO_AUTH_FAILED} when the response does not include the required SSO authentication cookie (authentication failed)
+   */
   public void LoginPortal(OkHttpClient okHttpClient, LoginRequest loginRequestDto) throws IOException {
 
     final String loginUrl = "https://portal.sejong.ac.kr/jsp/login/login_action.jsp";

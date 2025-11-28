@@ -6,5 +6,11 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface RefreshTokenRepository extends CrudRepository<RefreshToken, String> {
 
-  List<RefreshToken> findAllByUserId(Long userId);
+  /**
+ * Finds all refresh tokens belonging to the specified user.
+ *
+ * @param userId the ID of the user whose refresh tokens should be retrieved
+ * @return a list of RefreshToken entities associated with the given userId; may be empty if none exist
+ */
+List<RefreshToken> findAllByUserId(Long userId);
 }

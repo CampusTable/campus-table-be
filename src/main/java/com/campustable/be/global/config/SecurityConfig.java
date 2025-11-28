@@ -20,6 +20,15 @@ public class SecurityConfig {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
+  /**
+   * Configure and return the application's SecurityFilterChain using stateless JWT-based security,
+   * custom authentication and access-denied handlers, and role-based authorization rules.
+   *
+   * @param http the HttpSecurity to configure
+   * @param jwtAuthenticationEntryPoint the entry point invoked on authentication failures
+   * @return the configured SecurityFilterChain
+   * @throws Exception if an error occurs while configuring or building the security filter chain
+   */
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) throws Exception {
     http

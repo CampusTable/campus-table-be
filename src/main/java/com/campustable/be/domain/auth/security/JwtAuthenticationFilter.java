@@ -42,6 +42,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       "/docs/swagger-ui"
   );
 
+  /**
+   * Authenticates the incoming request by extracting a Bearer JWT from the Authorization header,
+   * validating it, and setting the SecurityContext with the authenticated user; on token-related
+   * failures writes a structured JSON error response and short-circuits the filter chain.
+   *
+   * <p>When a valid access token is present the filter loads corresponding UserDetails and
+   * sets a UsernamePasswordAuthenticationToken in SecurityContextHolder. On token expiration the
+   * filter attempts to verify a refresh token from cookies and returns specific error codes
+   * for access-token-expired, refresh-token-invalid/expired, JWT invalidity, or internal errors.
+   *
+   * @param request  the HTTP request to inspect for authentication tokens
+   * @param response the HTTP response used to write error responses when authentication fails
+   * @param chain    the filter chain to continue when authentication succeeds or is not attempted
+   * @throws ServletException if an error occurs while invoking the next filter in the chain
+   * @throws IOException      if an I/O error occurs while reading the request or writing the response
+   */
   @Override
   protected void doFilterInternal(
       HttpServletRequest request,
@@ -107,6 +123,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     chain.doFilter(request, response);
   }
 
+  /**
+   * Determines whether this filter should be skipped for the given HTTP request.
+   *
+   * @param request the incoming HTTP servlet request
+   * @return `true` if the request URI starts with any configured exclusion pattern, `false` otherwise
+   */
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
 
@@ -116,6 +138,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         .anyMatch(path::startsWith);
   }
 
+  /**
+   * Retrieves the value of the cookie named "refreshToken" from the request, if present.
+   *
+   * @param request the HTTP request whose cookies will be searched
+   * @return the refresh token string from the "refreshToken" cookie, or {@code null} if not found
+   */
   private String extractRefreshTokenFromCookies(HttpServletRequest request) {
     Cookie[] cookies = request.getCookies();
 
@@ -129,6 +157,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     return null; // 토큰을 찾지 못한 경우
   }
 
+  /**
+   * Writes a JSON error payload to the provided HttpServletResponse based on the given ErrorCode.
+   *
+   * The response status, content type, and character encoding are set, and a JSON body
+   * containing the error code name and message is written.
+   *
+   * @param response  the servlet response to write the error to
+   * @param errorCode the error code whose HTTP status, name, and message populate the response body
+   * @throws IOException if an I/O error occurs while writing the response
+   */
   private void writeErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
 
     response.setStatus(errorCode.getStatus().value());
@@ -146,4 +184,3 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
   private record ErrorResponse(String errorCode, String errorMessage) {}
 }
-

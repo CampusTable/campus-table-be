@@ -11,6 +11,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 public interface UserControllerDocs {
 
+  /**
+   * Retrieve all users in the system; accessible only to administrators.
+   *
+   * Requires an authenticated admin access token; the request may be rejected with a 403 status if the caller lacks permission.
+   *
+   * @return a ResponseEntity containing a list of UserResponse objects representing each user's name, id, and role
+   */
   @Operation(
       summary = "전체 사용자 조회 (관리자)",
       description = """
@@ -39,6 +46,17 @@ public interface UserControllerDocs {
   ResponseEntity<List<UserResponse>> getAllUsers();
 
 
+  /**
+   * Retrieve the profile information of the currently authenticated user.
+   *
+   * <p>Requires a valid Access Token; the server derives the userId from the token and returns the
+   * latest user data from the database.</p>
+   *
+   * <p>Response includes `userName` (String), `userId` (Long), and `role` (String). If the token is
+   * valid but no matching user exists, the request results in a 404 USER_NOT_FOUND response.</p>
+   *
+   * @return the authenticated user's UserResponse containing `userName`, `userId`, and `role`
+   */
   @Operation(
       summary = "내 정보 조회",
       description = """
@@ -68,6 +86,14 @@ public interface UserControllerDocs {
   ResponseEntity<UserResponse> getMyProfile();
 
 
+  /**
+   * Delete the authenticated user's account.
+   *
+   * Deletes the user identified by the authenticated Access Token and removes all associated refresh tokens.
+   * This operation is irreversible and requires a valid Access Token; on success the response has no body.
+   *
+   * @return HTTP 204 No Content on successful deletion.
+   */
   @Operation(
       summary = "내 계정 삭제",
       description = """
@@ -95,6 +121,12 @@ public interface UserControllerDocs {
   ResponseEntity<Void> deleteUser();
 
 
+  /**
+   * Delete a specific user by ID; requires administrator privileges.
+   *
+   * @param userId the ID of the user to delete
+   * @return a ResponseEntity with HTTP 204 (No Content) when the user is successfully deleted
+   */
   @Operation(
       summary = "특정 사용자 삭제 (관리자)",
       description = """
@@ -121,6 +153,14 @@ public interface UserControllerDocs {
   ResponseEntity<Void> deleteUser(@PathVariable Long userId);
 
 
+  /**
+   * Register a new user and issue an access token plus a refresh token (refresh token is set as an HttpOnly cookie).
+   *
+   * Expects a UserRequest JSON body with `loginId` (required), optional `password`, and `role` (required). The server will reject duplicate `loginId` values.
+   *
+   * @param userRequest the user registration payload containing `loginId`, `password`, and `role`
+   * @return an AuthResponse with `isNewUser`, `accessToken`, and `maxAge`; the `refreshToken` is returned only via an HttpOnly (Secure) cookie
+   */
   @Operation(
       summary = "회원가입",
       description = """
@@ -155,6 +195,14 @@ public interface UserControllerDocs {
   ResponseEntity<AuthResponse> createUser(@RequestBody UserRequest userRequest);
 
 
+  /**
+   * Update the authenticated user's information.
+   *
+   * Updates only the fields provided in the UserRequest; fields omitted in the request remain unchanged.
+   *
+   * @param userRequest DTO containing optional fields to update: `loginId`, `password`, and `role`.
+   * @return ResponseEntity containing the updated UserResponse (userName, userId, role).
+   */
   @Operation(
       summary = "내 정보 수정",
       description = """

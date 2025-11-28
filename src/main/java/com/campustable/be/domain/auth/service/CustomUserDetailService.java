@@ -19,6 +19,14 @@ public class CustomUserDetailService implements UserDetailsService {
 
   private final UserRepository userRepository;
 
+  /**
+   * Load user details using a user ID provided as a string.
+   *
+   * @param idString the user ID as a string; expected to be a numeric value parseable to a Long
+   * @return a {@link UserDetails} instance for the located user
+   * @throws UsernameNotFoundException if {@code idString} is not a valid numeric ID
+   * @throws CustomException with {@code ErrorCode.USER_NOT_FOUND} if no user exists for the parsed ID
+   */
   @Override
   public UserDetails loadUserByUsername(String idString) throws UsernameNotFoundException {
     try {

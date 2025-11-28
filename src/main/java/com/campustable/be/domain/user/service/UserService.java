@@ -31,7 +31,11 @@ public class UserService {
   private final RefreshTokenRepository refreshTokenRepository;
   private final AuthService authService;
 
-  //관리자든 일반유저든 모두 가져옴
+  / **
+   * Retrieve all users and convert them to UserResponse DTOs.
+   *
+   * @return a list of UserResponse objects representing all users
+   */
   public List<UserResponse> getAllUsers(){
 
     List<User> users = userRepository.findAll();
@@ -41,6 +45,13 @@ public class UserService {
         .toList();
   }
 
+  /**
+   * Retrieve user information for the given user ID.
+   *
+   * @param userId the ID of the user to retrieve
+   * @return a UserResponse representing the user
+   * @throws CustomException with ErrorCode.USER_NOT_FOUND if no user exists for the given ID
+   */
   public UserResponse getMyUserInfo(Long userId){
 
     User user = userRepository.findById(userId)
@@ -54,6 +65,13 @@ public class UserService {
     return UserResponse.from(user);
   }
 
+  /**
+   * Create a new user account and issue initial authentication tokens.
+   *
+   * @param userRequest details for the user to create (e.g., loginId and role)
+   * @return an AuthResponse containing `isNewUser = true`, the issued access token, the issued refresh token, and the refresh token lifetime in seconds (`maxAgeSeconds`)
+   * @throws CustomException if a user with the same loginId already exists (ErrorCode.USER_ALREADY_EXISTS)
+   */
   public AuthResponse createUser(UserRequest userRequest){
 
     Optional<User> existingUser = userRepository.findByLoginId(userRequest.getLoginId());
@@ -85,6 +103,12 @@ public class UserService {
 
   }
 
+  /**
+   * Updates the currently authenticated user's profile with values from the provided request and returns the updated representation.
+   *
+   * @param userRequest the new user attributes to apply
+   * @return the updated UserResponse for the authenticated user
+   */
   public UserResponse updateUser(UserRequest userRequest){
 
     Long userId = Long.valueOf(SecurityContextHolder.getContext()
@@ -100,7 +124,12 @@ public class UserService {
     return UserResponse.from(userRepository.save(existingUser));
   }
 
-  //관리자가 아닌 유저가 자기자신을 지우는메서드
+  /**
+   * Delete the user with the given ID and remove all of their stored refresh tokens.
+   *
+   * @param userId the ID of the user to delete
+   * @throws CustomException with ErrorCode.USER_NOT_FOUND if no user exists for the given ID
+   */
   public void deleteUser(Long userId) {
 
     User user = userRepository.findById(userId)

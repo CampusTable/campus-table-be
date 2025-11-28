@@ -26,8 +26,15 @@ public class AuthController implements AuthControllerDocs {
   private final AuthService authService;
 
   /**
-   * 통합 로그인 API
-   * - DB 조회 → 기존/신규 사용자 분기 처리
+   * Authenticate a user and establish a refresh-token cookie for subsequent requests.
+   *
+   * Processes the login request, issues authentication tokens, and sets the refresh token as an
+   * HTTP-only, Secure, SameSite=Strict cookie on the response; the returned AuthResponse has its
+   * refreshToken field cleared.
+   *
+   * @param loginRequest the login credentials or provider token supplied in the request body
+   * @return the authentication response containing user information and flags (with `refreshToken` cleared)
+   * @throws IOException if an I/O error occurs while processing the login
    */
   @Override
   @LogMonitoringInvocation
@@ -56,6 +63,12 @@ public class AuthController implements AuthControllerDocs {
         .body(response);
   }
 
+  /**
+   * Reissues access and refresh tokens using the refresh token provided in the request cookie.
+   *
+   * @param refreshToken the refresh token read from the `refreshToken` cookie
+   * @return a TokenReissueResponse containing the newly issued access token and related metadata; the new refresh token is set in a `Set-Cookie` header and removed from the response body
+   */
   @Override
   @LogMonitoringInvocation
   @PostMapping("/issue")

@@ -31,9 +31,11 @@ public class AuthService {
   private final JwtProvider jwtProvider;
   private final RefreshTokenRepository refreshTokenRepository;
   /**
-   * 통합 로그인 처리 (DB 우선 조회)
-   * 1. DB에서 학번으로 사용자 조회
-   * 2. 기존사용자와 신규사용자로 분기
+   * Handle unified login by looking up the user by student number and delegating to either existing-user login or onboarding.
+   *
+   * @param loginRequest request carrying the Sejong portal ID used as the student number and any credentials required for portal verification
+   * @return an AuthResponse containing user identity, an `isNewUser` flag, and generated access/refresh tokens with their expiry information
+   * @throws IOException if an I/O error occurs during portal verification or onboarding operations
    */
 
   public AuthResponse login(LoginRequest loginRequest) throws IOException {
@@ -51,6 +53,16 @@ public class AuthService {
     }
   }
 
+  /**
+   * Creates an authentication response for an existing user by validating the provided Sejong portal credentials,
+   * issuing a new access token and refresh token, persisting the refresh token, and returning token details.
+   *
+   * @param loginRequest  the incoming login request containing the Sejong portal ID and credentials
+   * @param existingUser  the persisted user that matches the loginRequest's student identifier
+   * @return              an AuthResponse populated with studentNumber, studentName, isNewUser=false, accessToken,
+   *                      refreshToken, and the refresh token lifetime in seconds
+   * @throws IOException  if Sejong portal validation or related I/O operations fail
+   */
   private AuthResponse handleExistingUser(LoginRequest loginRequest, User existingUser) throws IOException {
 
     String refreshTokenId = UUID.randomUUID().toString();
@@ -73,6 +85,13 @@ public class AuthService {
         .build();
   }
 
+  /**
+   * Onboards a new user and returns authentication tokens together with the user's basic info.
+   *
+   * @param loginRequest the login request containing Sejong portal credentials/identifier used to verify and obtain member information
+   * @return an AuthResponse containing the user's student number and name, `isNewUser` set to `true`, a new access token, a new refresh token, and `maxAgeSeconds` indicating the refresh token lifetime in seconds
+   * @throws IOException if verifying credentials or retrieving member information from the Sejong portal fails
+   */
   public AuthResponse handleNewUser(LoginRequest loginRequest) throws IOException {
     log.info("신규 사용자 온보딩 시도: {}", loginRequest.getSejongPortalId());
 
@@ -106,6 +125,16 @@ public class AuthService {
         .build();
   }
 
+  /**
+   * Rotates the provided refresh token and returns newly issued access and refresh tokens.
+   *
+   * <p>Extracts the token identifier (jti) from the given refresh token, validates and removes the
+   * stored refresh token, issues a new access token and a new refresh token for the associated
+   * user, persists the new refresh token record, and returns the tokens with their refresh expiry.</p>
+   *
+   * @param refreshToken the current refresh JWT to reissue from
+   * @return a TokenReissueResponse containing the new access token, new refresh token, and refresh expiry in seconds
+   */
   public TokenReissueResponse reissueToken(String refreshToken) {
 
     String jti = jwtProvider.getJti(refreshToken);
@@ -133,6 +162,13 @@ public class AuthService {
   }
 
 
+  /**
+   * Builds a RefreshToken entity for the given user using the provided JTI.
+   *
+   * @param jti    the unique token identifier (JTI) for the refresh token
+   * @param userId the id of the user the refresh token will be associated with
+   * @return       a RefreshToken entity containing the provided `jti`, `userId`, and an expiration (in seconds) derived from the JWT provider's refresh expiry
+   */
   public RefreshToken setRefreshToken(String jti, Long userId) {
     return RefreshToken.builder()
         .jti(jti)
@@ -141,6 +177,5 @@ public class AuthService {
         .build();
   }
 }
-
 
 

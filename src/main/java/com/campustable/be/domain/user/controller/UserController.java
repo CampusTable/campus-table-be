@@ -29,6 +29,11 @@ public class UserController implements UserControllerDocs{
 
   private final UserService userService;
 
+  /**
+   * Retrieve a list of all user profiles.
+   *
+   * @return ResponseEntity containing a list of UserResponse instances for all users.
+   */
   @Override
   @LogMonitoringInvocation
   @GetMapping("/admin/users")
@@ -39,6 +44,11 @@ public class UserController implements UserControllerDocs{
     return ResponseEntity.ok(users);
   }
 
+  /**
+   * Retrieves the profile of the currently authenticated user.
+   *
+   * @return the authenticated user's profile as a {@link UserResponse}
+   */
   @LogMonitoringInvocation
   @GetMapping("/me")
   public ResponseEntity<UserResponse> getMyProfile() {
@@ -49,6 +59,13 @@ public class UserController implements UserControllerDocs{
     return ResponseEntity.ok(response);
   }
 
+  /**
+   * Deletes the currently authenticated user.
+   *
+   * Deletes the user identified by the authenticated principal in the security context.
+   *
+   * @return an empty response with HTTP status 204 (No Content)
+   */
   @LogMonitoringInvocation
   @DeleteMapping("/users")
   public ResponseEntity<Void> deleteUser() {
@@ -60,6 +77,12 @@ public class UserController implements UserControllerDocs{
     return ResponseEntity.noContent().build();
   }
 
+  /**
+   * Delete the user with the given ID.
+   *
+   * @param userId the ID of the user to delete
+   * @return HTTP 204 No Content response
+   */
   @LogMonitoringInvocation
   @DeleteMapping("/admin/users/{userId}")
   public ResponseEntity<Void> deleteUser(@PathVariable Long userId){
@@ -67,6 +90,17 @@ public class UserController implements UserControllerDocs{
     return ResponseEntity.noContent().build();
   }
 
+  /**
+   * Create a new user account and return authentication information.
+   *
+   * <p>On success, issues the refresh token as a `Set-Cookie` header and removes the token from the
+   * returned body.</p>
+   *
+   * @param userRequest the signup payload containing user credentials and profile data
+   * @return the authentication response with the `refreshToken` field cleared; the refresh token is
+   *         delivered in a `Set-Cookie` header as an HttpOnly, Secure cookie with SameSite=Strict,
+   *         path "/", and max-age taken from the response
+   */
   @LogMonitoringInvocation
   @PostMapping  ("/signup")
   public ResponseEntity<AuthResponse> createUser(@RequestBody UserRequest userRequest){
@@ -88,6 +122,12 @@ public class UserController implements UserControllerDocs{
         .body(response);
   }
 
+  /**
+   * Updates the authenticated user's profile with the provided values.
+   *
+   * @param userRequest the user fields to update
+   * @return the updated user representation
+   */
   @LogMonitoringInvocation
   @PatchMapping("/users")
   public ResponseEntity<UserResponse> updateUser(@RequestBody UserRequest userRequest){

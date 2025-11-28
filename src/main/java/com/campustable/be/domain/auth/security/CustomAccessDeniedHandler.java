@@ -18,6 +18,15 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
   private final ObjectMapper objectMapper;
 
+  /**
+   * Handles an access-denied event by writing a standardized JSON error response for ACCESS_DENIED.
+   *
+   * @param request the HTTP servlet request
+   * @param response the HTTP servlet response used to write the error payload
+   * @param accessDeniedException the exception that triggered this handler
+   * @throws IOException if an I/O error occurs while writing the response
+   * @throws ServletException if the servlet container encounters an error handling the request
+   */
   @Override
   public void handle(HttpServletRequest request, HttpServletResponse response,
       AccessDeniedException accessDeniedException) throws IOException, ServletException {
@@ -25,7 +34,16 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     writeErrorResponse(response, ErrorCode.ACCESS_DENIED);
   }
 
-  // JWT 필터와 동일한 로직을 사용해 응답 형식을 통일합니다.
+  /**
+   * Write a standardized JSON error payload to the given HttpServletResponse using the provided ErrorCode.
+   *
+   * Sets the response status, Content-Type to application/json, character encoding to UTF-8, and writes a JSON
+   * object containing `errorCode` and `errorMessage`.
+   *
+   * @param response the HttpServletResponse to write the error to
+   * @param errorCode the ErrorCode whose status and message will be used in the response body
+   * @throws IOException if an I/O error occurs while writing the response
+   */
   private void writeErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
 
     response.setStatus(errorCode.getStatus().value());

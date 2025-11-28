@@ -10,6 +10,19 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 
 public interface AuthControllerDocs {
+  /**
+   * Perform integrated login using Sejong University portal credentials.
+   *
+   * @param loginRequest request body containing `sejongPortalId` (portal student ID) and `sejongPortalPassword` (portal password)
+   * @return an AuthResponse containing:
+   *         - `studentNumber`: the logged-in user's student number
+   *         - `studentName`: the user's name for newly registered users, `null` for existing users
+   *         - `isNewUser`: `true` when the user was newly created, `false` otherwise
+   *         - `accessToken`: issued JWT access token
+   *         - `maxAge`: refresh token expiration time in seconds
+   *         Note: the refresh token is set as an HttpOnly secure cookie (not included in the response body).
+   * @throws IOException if an I/O error occurs during portal authentication or verification
+   */
   @Operation(
       summary = "통합 로그인",
       description = """
@@ -48,7 +61,13 @@ public interface AuthControllerDocs {
   )
   public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) throws IOException;
 
-  @Operation(
+  /**
+       * Reissues a new access token using the refresh token supplied in the request cookie.
+       *
+       * @param refreshToken the refresh token from the "refreshToken" cookie; may be null if the cookie is missing
+       * @return a TokenReissueResponse containing `studentNumber`, `studentName`, `isNewUser` (always `false`), `accessToken`, and `maxAge`; a new refresh token is returned to the client as an HttpOnly cookie
+       */
+      @Operation(
       summary = "Access Token 재발급",
       description = """
         ### 요청 파라미터

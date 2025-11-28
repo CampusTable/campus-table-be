@@ -27,6 +27,13 @@ public class JwtProvider {
   private final long refreshInMs;
   private final SecretKey secretKey;
 
+  /**
+   * Create a JwtProvider configured with the signing secret and token lifetimes.
+   *
+   * @param secretKeyString the HMAC secret used to sign and verify JWTs
+   * @param expirationInMs  access token lifetime in milliseconds
+   * @param refreshInMs     refresh token lifetime in milliseconds
+   */
   public JwtProvider(@Value("${jwt.secret}") String secretKeyString,
       @Value("${jwt.expiration-time}") long expirationInMs,
       @Value("${jwt.refresh-expiration-time}") long refreshInMs
@@ -37,6 +44,12 @@ public class JwtProvider {
     this.secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes(StandardCharsets.UTF_8));
   }
 
+  /**
+   * Create a signed JWT access token for the given user.
+   *
+   * @param user the authenticated user whose id and role are embedded in the token claims
+   * @return the compact serialized access token (JWT)
+   */
   public String createAccessToken(User user) {
 
     Map<String, Object> claims;
@@ -49,6 +62,13 @@ public class JwtProvider {
         .compact();
   }
 
+  /**
+   * Create a signed refresh JWT for the given user that includes the provided JWT ID.
+   *
+   * @param user the user for whom the refresh token is issued
+   * @param jti  the JWT ID to set in the token's "jti" claim (used to identify or revoke the refresh token)
+   * @return     the compact serialized refresh JWT string
+   */
   public String createRefreshToken(User user, String jti) {
 
     Map<String, Object> claims;
@@ -61,6 +81,13 @@ public class JwtProvider {
         .compact();
   }
 
+  /**
+   * Extracts the subject (user ID) from the given JWT and returns it as a Long.
+   *
+   * @param token the compact JWT string to parse and verify
+   * @return the `sub` claim parsed as a Long
+   * @throws CustomException if the token is invalid, malformed, or the subject claim is missing or blank (ErrorCode.JWT_INVALID)
+   */
   public Long getSubject(String token){
 
     String id;
@@ -83,7 +110,12 @@ public class JwtProvider {
     return Long.valueOf(id);
   }
 
-  public void validateToken(String token) {
+  /**
+     * Validates the integrity and signature of the provided JWT.
+     *
+     * @param token the compact JWT string to validate
+     */
+    public void validateToken(String token) {
     Jwts.parser()
         .verifyWith(secretKey)
         .build()
@@ -91,6 +123,14 @@ public class JwtProvider {
         .getPayload();
     }
 
+  /**
+   * Builds JWT payload claims for the given user using the current time and a lifetime offset.
+   *
+   * @param user the user whose role and identifier are embedded in the claims
+   * @param additionalMs lifetime to add to the current time, in milliseconds (used to compute the `exp` claim)
+   * @return a map with keys: `"role"` (user role), `"sub"` (user id as a string), `"iat"` (issued-at time in seconds since epoch),
+   *         and `"exp"` (expiration time in seconds since epoch)
+   */
   private Map<String,Object> setClaims(User user, Long additionalMs){
 
     Map<String,Object> claims = new HashMap<>();
@@ -106,6 +146,13 @@ public class JwtProvider {
     return claims;
   }
 
+  /**
+   * Extracts the JWT ID (`jti`) claim from the provided refresh token.
+   *
+   * @param refreshToken the signed refresh JWT string
+   * @return the `jti` claim value from the token
+   * @throws CustomException with ErrorCode.JWT_INVALID if the token is invalid, cannot be parsed, or the `jti` claim is missing or blank
+   */
   public String getJti(String refreshToken) {
     try{
       Claims claims = Jwts.parser().verifyWith(secretKey)
