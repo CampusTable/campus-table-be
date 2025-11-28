@@ -1,6 +1,7 @@
 package com.campustable.be.domain.auth.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,8 +10,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class TokenReissueResponse {
-  String accessToken;
-  String refreshToken;
-  Long maxAge;
+  private String accessToken;
+  private String refreshToken;
+  private Long maxAge;
 }

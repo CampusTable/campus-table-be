@@ -80,7 +80,7 @@ public class UserService {
         .isNewUser(true)
         .accessToken(accessToken)
         .refreshToken(refreshToken)
-        .maxAge(jwtProvider.getRefreshInMs()/1000)
+        .maxAgeSeconds(jwtProvider.getRefreshInMs()/1000)
         .build();
 
   }
@@ -106,7 +106,7 @@ public class UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(()->{
           log.error("토큰은 유효하지만 토큰에 해당하는 userId:{}가 db에 존재하지 않습니다.", userId);
-          throw new CustomException(ErrorCode.USER_NOT_FOUND);
+          return new CustomException(ErrorCode.USER_NOT_FOUND);
         });
 
     List<RefreshToken> tokensToDelete = refreshTokenRepository.findAllByUserId(userId);

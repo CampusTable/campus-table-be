@@ -69,7 +69,7 @@ public class AuthService {
         .isNewUser(false)
         .accessToken(accessToken)
         .refreshToken(refreshToken)
-        .maxAge(jwtProvider.getRefreshInMs()/1000)
+        .maxAgeSeconds(jwtProvider.getRefreshInMs()/1000)
         .build();
   }
 
@@ -102,7 +102,7 @@ public class AuthService {
         .isNewUser(true)
         .accessToken(accessToken)
         .refreshToken(refreshToken)
-        .maxAge(jwtProvider.getRefreshInMs()/1000)
+        .maxAgeSeconds(jwtProvider.getRefreshInMs()/1000)
         .build();
   }
 
@@ -113,7 +113,7 @@ public class AuthService {
     RefreshToken existingRefreshToken = refreshTokenRepository.findById(jti)
         .orElseThrow(()->{
           log.error("redis에 refreshToken이존재하지 않습니다.");
-          throw new CustomException(ErrorCode.JWT_INVALID);
+          return new CustomException(ErrorCode.JWT_INVALID);
         });
     Long userId = existingRefreshToken.getUserId();
     refreshTokenRepository.delete(existingRefreshToken);
@@ -121,7 +121,7 @@ public class AuthService {
     User user = userRepository.findById(userId)
         .orElseThrow(()->{
           log.error("refreshToken에 해당하는 유저가 존재하지않습니다.");
-          throw new CustomException(ErrorCode.USER_NOT_FOUND);
+          return new CustomException(ErrorCode.USER_NOT_FOUND);
         });
 
     String refreshTokenId = UUID.randomUUID().toString();

@@ -13,6 +13,6 @@ public class AuthResponse {
   boolean isNewUser;
   String accessToken;
   String refreshToken;
-  Long maxAge;
+  Long maxAgeSeconds;
 }
 

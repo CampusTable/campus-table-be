@@ -41,8 +41,9 @@ public class AuthController implements AuthControllerDocs {
     ResponseCookie cookie = ResponseCookie.from("refreshToken",refreshToken)
         .httpOnly(true)
         .secure(true)
+        .path("/")
         .sameSite("Strict")
-        .maxAge(response.getMaxAge())
+        .maxAge(response.getMaxAgeSeconds())
         .build();
 
     response.setRefreshToken(null);
@@ -59,7 +60,7 @@ public class AuthController implements AuthControllerDocs {
   @LogMonitoringInvocation
   @PostMapping("/issue")
   public ResponseEntity<TokenReissueResponse> issueAccessToken(
-      @CookieValue(name="refreshToken", required = false) String refreshToken) {
+      @CookieValue(name="refreshToken") String refreshToken) {
 
     TokenReissueResponse response = authService.reissueToken(refreshToken);
 

@@ -60,7 +60,6 @@ public class UserController implements UserControllerDocs{
     return ResponseEntity.noContent().build();
   }
 
-  //토큰도지워야함
   @LogMonitoringInvocation
   @DeleteMapping("/admin/users/{userId}")
   public ResponseEntity<Void> deleteUser(@PathVariable Long userId){
@@ -79,7 +78,8 @@ public class UserController implements UserControllerDocs{
         .httpOnly(true)
         .secure(true)
         .sameSite("Strict")
-        .maxAge(response.getMaxAge())
+        .path("/")
+        .maxAge(response.getMaxAgeSeconds())
         .build();
     response.setRefreshToken(null);
 

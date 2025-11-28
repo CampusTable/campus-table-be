@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserResponse {
 
-  String userName;
-  Long userId;
-  String role;
+  private String userName;
+  private Long userId;
+  private String role;
 
   public static UserResponse from(User user) {
     return UserResponse.builder()

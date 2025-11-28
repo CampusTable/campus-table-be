@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
       jwt = bearerToken.substring(7); // "Bearer " (7글자) 이후의 토큰 문자열 반환
     } else jwt = null;
-    
+
     if (jwt != null) {
       try {
         // 1. Access Token 유효성 검증 (예외 발생 가능 지점)
@@ -68,14 +68,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       } catch (ExpiredJwtException e) {
         String refreshToken = extractRefreshTokenFromCookies(request);
-        if (refreshToken != null) {
-          String jti = jwtProvider.getJti(refreshToken);
-          if (refreshTokenRepository.findById(jti).isPresent()) {
-            writeErrorResponse(response, ErrorCode.ACCESS_TOKEN_EXPIRED);
-            return ;
+        if (StringUtils.hasText(refreshToken)) {
+          try {
+            String jti = jwtProvider.getJti(refreshToken);
+            if (refreshTokenRepository.findById(jti).isPresent()) {
+              writeErrorResponse(response, ErrorCode.ACCESS_TOKEN_EXPIRED);
+              return;
+            }
+          } catch (CustomException | JwtException ex) {
+            // 리프레시 토큰 자체가 유효하지 않거나 만료된 경우
+            log.warn("Refresh Token 검증 실패: {}", ex.getMessage());
+            writeErrorResponse(response, ErrorCode.REFRESH_TOKEN_INVALID);
+            return;
+          } catch (Exception ex) {
+            // Redis 장애 등 예기치 못한 서버 오류
+            log.error("Refresh Token 검증 중 서버 에러: {}", ex.getMessage(), ex);
+            writeErrorResponse(response, ErrorCode.INTERNAL_SERVER_ERROR);
+            return;
           }
         }
-        writeErrorResponse(response, ErrorCode.JWT_INVALID);
+        writeErrorResponse(response, ErrorCode.REFRESH_TOKEN_EXPIRED);
         return ;
       } catch (CustomException e) {
         writeErrorResponse(response, e.getErrorCode());
@@ -130,6 +142,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         )
     );
     response.getWriter().write(errorJson);
+    response.getWriter().flush();
   }
   private record ErrorResponse(String errorCode, String errorMessage) {}
 }

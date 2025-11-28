@@ -30,6 +30,10 @@ public enum ErrorCode {
 
   JWT_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 인증 정보입니다. 다시 로그인해 주세요."),
 
+  REFRESH_TOKEN_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 리프레시 토큰입니다. 다시 로그인해 주세요."),
+
+  REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "리프레시토큰이 만료되었습니다. 다시 로그인해 주세요."),
+
   // Cafeteria
 
   CAFETERIA_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 식당 정보를 찾을 수 없습니다."),
@@ -38,7 +42,7 @@ public enum ErrorCode {
 
   OPERATING_HOURS_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 운영시간 정보를 찾을 수 없습니다."),
 
-  OPERATING_HOURS_ALREADY_EXISTS(HttpStatus.NOT_FOUND, "이미 존재하는 운영시간입니다."),
+  OPERATING_HOURS_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 운영시간입니다."),
 
   //User
   USER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."),

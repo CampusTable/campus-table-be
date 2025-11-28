@@ -18,11 +18,12 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@Getter
 public class JwtProvider {
 
   private final String secretKeyString;
+  @Getter
   private final long expirationInMs;
+  @Getter
   private final long refreshInMs;
   private final SecretKey secretKey;
 
