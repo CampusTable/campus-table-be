@@ -82,6 +82,12 @@ public class CategoryService {
       throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
     }
 
+    Optional<Cafeteria> cafeteria = cafeteriaRepository.findById(request.getCafeteriaId());
+    if (cafeteria.isEmpty()) {
+      log.error("cafeteriaId not found {}", id);
+      throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
+    }
+
     category.get().update(request);
     return CategoryResponse.from(category.get());
 
@@ -90,13 +96,13 @@ public class CategoryService {
   @Transactional
   public void deleteCategory(Long id) {
 
-    Optional<Category> category = categoryRepository.findById(id);
-    if (category.isEmpty()) {
-      log.warn("categoryId not found {}", id);
-    }
-    else{
-      categoryRepository.delete(category.get());
-    }
+    Category category = categoryRepository.findById(id)
+        .orElseThrow(() -> {
+          log.warn("categoryId not found {}", id);
+          return new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
+        });
+
+    categoryRepository.delete(category);
   }
 
 }
