@@ -39,9 +39,7 @@ public class OperatingHours {
   private Long operatingId;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "cafeteria_id", nullable = false,
-      foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT,
-          foreignKeyDefinition = "FOREIGN KEY (cafeteria_id) REFERENCES cafeterias (cafeteria_id) ON DELETE CASCADE"))
+  @JoinColumn(name = "cafeteria_id", nullable = false)
   private Cafeteria cafeteria;
 
   @Enumerated(EnumType.STRING)
