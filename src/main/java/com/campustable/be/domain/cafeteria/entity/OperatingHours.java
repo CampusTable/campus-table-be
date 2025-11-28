@@ -65,10 +65,20 @@ public class OperatingHours {
   private LocalTime closeTime;
 
   public void update(OperatingHoursRequest request) {
-    this.dayOfWeek = request.getDayOfWeek();
-    this.breaksStartTime = request.getBreaksStartTime();
-    this.breaksCloseTime = request.getBreaksCloseTime();
-    this.openTime = request.getOpenTime();
-    this.closeTime = request.getCloseTime();
+    if (request.getBreaksStartTime() != null) {
+      this.dayOfWeek = request.getDayOfWeek();
+    }
+    if (request.getBreaksCloseTime() != null) {
+      this.breaksStartTime = request.getBreaksStartTime();
+    }
+    if (request.getBreaksCloseTime() != null) {
+      this.breaksCloseTime = request.getBreaksCloseTime();
+    }
+    if (request.getOpenTime() != null) {
+      this.openTime = request.getOpenTime();
+    }
+    if (request.getCloseTime() != null) {
+      this.closeTime = request.getCloseTime();
+    }
   }
 }
