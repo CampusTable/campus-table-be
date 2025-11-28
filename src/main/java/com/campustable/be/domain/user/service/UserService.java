@@ -1,9 +1,9 @@
-package com.campustable.be.domain.User.service;
+package com.campustable.be.domain.user.service;
 
-import com.campustable.be.domain.User.dto.UserRequest;
-import com.campustable.be.domain.User.dto.UserResponse;
-import com.campustable.be.domain.User.entity.User;
-import com.campustable.be.domain.User.repository.UserRepository;
+import com.campustable.be.domain.user.dto.UserRequest;
+import com.campustable.be.domain.user.dto.UserResponse;
+import com.campustable.be.domain.user.entity.User;
+import com.campustable.be.domain.user.repository.UserRepository;
 import com.campustable.be.domain.auth.dto.AuthResponse;
 import com.campustable.be.domain.auth.entity.RefreshToken;
 import com.campustable.be.domain.auth.provider.JwtProvider;
@@ -106,11 +106,10 @@ public class UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(()->{
           log.error("토큰은 유효하지만 토큰에 해당하는 userId:{}가 db에 존재하지 않습니다.", userId);
-          throw new CustomException(ErrorCode.USER_NOT_FOUND);
+          return new CustomException(ErrorCode.USER_NOT_FOUND);
         });
 
+    refreshTokenRepository.deleteAllByUserId(userId);
     userRepository.delete(user);
-    List<RefreshToken> tokensToDelete = refreshTokenRepository.findAllByUserId(userId);
-    refreshTokenRepository.deleteAll(tokensToDelete);
   }
 }

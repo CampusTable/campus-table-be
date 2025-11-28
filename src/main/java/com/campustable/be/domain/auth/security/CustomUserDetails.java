@@ -1,6 +1,6 @@
 package com.campustable.be.domain.auth.security;
 
-import com.campustable.be.domain.User.entity.User;
+import com.campustable.be.domain.user.entity.User;
 import java.util.Collection;
 import java.util.List;
 import lombok.Getter;
@@ -20,6 +20,9 @@ public class CustomUserDetails implements UserDetails {
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
       String role = user.getRole();
+      if (role == null || role.isBlank()) {
+        return List.of();
+      }
       return List.of(new SimpleGrantedAuthority("ROLE_"+role));
   }
 

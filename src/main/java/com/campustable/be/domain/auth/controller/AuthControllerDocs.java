@@ -52,7 +52,7 @@ public interface AuthControllerDocs {
       summary = "Access Token 재발급",
       description = """
         ### 요청 파라미터
-        - (Cookie) `refresh_token` (String, required): 기존 로그인 시 발급받은 Refresh Token
+        - (Cookie) `refreshToken` (String, required): 기존 로그인 시 발급받은 Refresh Token
         
         ### 응답 데이터
         - `studentNumber` (String): 사용자 학번
@@ -68,7 +68,7 @@ public interface AuthControllerDocs {
         3. 새로 발급된 Access Token을 사용해 다시 인증이 필요한 API를 호출할 수 있습니다.
         
         ### 유의 사항
-        - 반드시 쿠키에 `refresh_token`이 존재해야 합니다.
+        - 반드시 쿠키에 `refreshToken`이 존재해야 합니다.
         - 유효하지 않거나 만료된 Refresh Token은 사용할 수 없습니다.
         - 새로 발급된 Refresh Token은 쿠키에 자동으로 갱신 저장됩니다.
         - HTTPS 환경에서만 정상 동작합니다. (`secure=true`, `httpOnly=true`)

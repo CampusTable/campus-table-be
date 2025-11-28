@@ -1,6 +1,6 @@
 package com.campustable.be.domain.auth.provider;
 
-import com.campustable.be.domain.User.entity.User;
+import com.campustable.be.domain.user.entity.User;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
@@ -14,7 +14,6 @@ import javax.crypto.SecretKey;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -26,17 +25,15 @@ public class JwtProvider {
   private final long expirationInMs;
   private final long refreshInMs;
   private final SecretKey secretKey;
-  private final RedisTemplate<String, Object> redisTemplate;
 
   public JwtProvider(@Value("${jwt.secret}") String secretKeyString,
       @Value("${jwt.expiration-time}") long expirationInMs,
-      @Value("${jwt.refresh-expiration-time}") long refreshInMs,
-      RedisTemplate<String, Object> redisTemplate) {
+      @Value("${jwt.refresh-expiration-time}") long refreshInMs
+      ) {
     this.secretKeyString = secretKeyString;
     this.expirationInMs = expirationInMs;
     this.refreshInMs = refreshInMs;
     this.secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes(StandardCharsets.UTF_8));
-    this.redisTemplate = redisTemplate;
   }
 
   public String createAccessToken(User user) {

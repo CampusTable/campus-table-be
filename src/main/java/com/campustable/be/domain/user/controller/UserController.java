@@ -1,8 +1,8 @@
-package com.campustable.be.domain.User.controller;
+package com.campustable.be.domain.user.controller;
 
-import com.campustable.be.domain.User.dto.UserRequest;
-import com.campustable.be.domain.User.dto.UserResponse;
-import com.campustable.be.domain.User.service.UserService;
+import com.campustable.be.domain.user.dto.UserRequest;
+import com.campustable.be.domain.user.dto.UserResponse;
+import com.campustable.be.domain.user.service.UserService;
 import com.campustable.be.domain.auth.dto.AuthResponse;
 import com.campustable.be.global.aop.LogMonitoringInvocation;
 import java.util.List;

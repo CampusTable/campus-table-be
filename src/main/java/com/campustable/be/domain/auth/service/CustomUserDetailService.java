@@ -1,7 +1,7 @@
 package com.campustable.be.domain.auth.service;
 
-import com.campustable.be.domain.User.entity.User;
-import com.campustable.be.domain.User.repository.UserRepository;
+import com.campustable.be.domain.user.entity.User;
+import com.campustable.be.domain.user.repository.UserRepository;
 import com.campustable.be.domain.auth.security.CustomUserDetails;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;

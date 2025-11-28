@@ -1,6 +1,6 @@
-package com.campustable.be.domain.User.entity;
+package com.campustable.be.domain.user.entity;
 
-import com.campustable.be.domain.User.dto.UserRequest;
+import com.campustable.be.domain.user.dto.UserRequest;
 import com.campustable.be.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")

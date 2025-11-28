@@ -1,7 +1,7 @@
-package com.campustable.be.domain.User.dto;
+package com.campustable.be.domain.user.dto;
 
 
-import com.campustable.be.domain.User.entity.User;
+import com.campustable.be.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

@@ -1,7 +1,7 @@
-package com.campustable.be.domain.User.controller;
+package com.campustable.be.domain.user.controller;
 
-import com.campustable.be.domain.User.dto.UserRequest;
-import com.campustable.be.domain.User.dto.UserResponse;
+import com.campustable.be.domain.user.dto.UserRequest;
+import com.campustable.be.domain.user.dto.UserResponse;
 import com.campustable.be.domain.auth.dto.AuthResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
