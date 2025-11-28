@@ -2,6 +2,7 @@ package com.campustable.be.domain.category.entity;
 
 import com.campustable.be.domain.cafeteria.entity.Cafeteria;
 import com.campustable.be.domain.category.dto.CategoryRequest;
+import com.campustable.be.domain.category.dto.CategoryUpdateRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -38,7 +39,7 @@ public class Category {
   @Column(name = "category_name")
   private String categoryName;
 
-  public void update(CategoryRequest request){
+  public void update(CategoryUpdateRequest request){
     this.categoryName = request.getCategoryName();
   }
 

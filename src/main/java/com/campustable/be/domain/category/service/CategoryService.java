@@ -5,6 +5,7 @@ import com.campustable.be.domain.cafeteria.entity.Cafeteria;
 import com.campustable.be.domain.cafeteria.repository.CafeteriaRepository;
 import com.campustable.be.domain.category.dto.CategoryRequest;
 import com.campustable.be.domain.category.dto.CategoryResponse;
+import com.campustable.be.domain.category.dto.CategoryUpdateRequest;
 import com.campustable.be.domain.category.entity.Category;
 import com.campustable.be.domain.category.repository.CategoryRepository;
 import com.campustable.be.global.exception.CustomException;
@@ -74,18 +75,12 @@ public class CategoryService {
   }
 
   @Transactional
-  public CategoryResponse updateCategory(CategoryRequest request, Long id) {
+  public CategoryResponse updateCategory(CategoryUpdateRequest request, Long id) {
 
     Optional<Category> category = categoryRepository.findById(id);
     if (category.isEmpty()) {
       log.error("categoryId not found {}", id);
       throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
-    }
-
-    Optional<Cafeteria> cafeteria = cafeteriaRepository.findById(request.getCafeteriaId());
-    if (cafeteria.isEmpty()) {
-      log.error("cafeteriaId not found {}", id);
-      throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
     }
 
     category.get().update(request);

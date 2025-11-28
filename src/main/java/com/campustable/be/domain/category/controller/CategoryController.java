@@ -2,6 +2,7 @@ package com.campustable.be.domain.category.controller;
 
 import com.campustable.be.domain.category.dto.CategoryRequest;
 import com.campustable.be.domain.category.dto.CategoryResponse;
+import com.campustable.be.domain.category.dto.CategoryUpdateRequest;
 import com.campustable.be.domain.category.service.CategoryService;
 import com.campustable.be.global.aop.LogMonitoringInvocation;
 import jakarta.validation.Valid;
@@ -55,7 +56,7 @@ public class CategoryController implements CategoryControllerDocs {
   @PatchMapping("/admin/categories/{categoryId}")
   @Override
   public ResponseEntity<CategoryResponse> updateCategory(
-      @Valid @RequestBody CategoryRequest request,
+      @Valid @RequestBody CategoryUpdateRequest request,
       @PathVariable Long categoryId){
     CategoryResponse response = categoryService.updateCategory(request, categoryId);
     return ResponseEntity.ok(response);
