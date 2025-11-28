@@ -106,10 +106,11 @@ public class UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(()->{
           log.error("토큰은 유효하지만 토큰에 해당하는 userId:{}가 db에 존재하지 않습니다.", userId);
-          return new CustomException(ErrorCode.USER_NOT_FOUND);
+          throw new CustomException(ErrorCode.USER_NOT_FOUND);
         });
 
-    refreshTokenRepository.deleteAllByUserId(userId);
+    List<RefreshToken> tokensToDelete = refreshTokenRepository.findAllByUserId(userId);
+    refreshTokenRepository.deleteAll(tokensToDelete);
     userRepository.delete(user);
   }
 }
