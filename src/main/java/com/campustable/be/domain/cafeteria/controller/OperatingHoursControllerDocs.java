@@ -140,7 +140,7 @@ public interface OperatingHoursControllerDocs {
             - 존재하지 않는 운영시간 ID로는 수정이 불가능합니다.
 
             ### 예외 처리
-            - `OPERATING_HOURS_NOT_FOUND` (404): "요청한 운영시간 정보를 찾을 수 없습니다."
+            - `OPERATING_HOURS_NOT_FOUND` (409): "요청한 운영시간 정보를 찾을 수 없습니다."
             """
   )
   ResponseEntity<OperatingHoursResponse> updateOperatingHours(Long id, OperatingHoursRequest request);

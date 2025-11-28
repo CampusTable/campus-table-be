@@ -16,7 +16,7 @@ public class OperatingHoursResponse {
 
   private Long operatingHoursId;
 
-  private Long CafeteriaId;
+  private Long cafeteriaId;
 
   private DayOfWeekEnum dayOfWeek;
 
@@ -46,6 +46,6 @@ public class OperatingHoursResponse {
   }
 
   public OperatingHoursResponse(Long id){
-    this.CafeteriaId = id;
+    this.cafeteriaId = id;
   }
 }

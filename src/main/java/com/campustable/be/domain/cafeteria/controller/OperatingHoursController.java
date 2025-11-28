@@ -29,7 +29,7 @@ public class OperatingHoursController implements OperatingHoursControllerDocs {
   @Override
   @PostMapping("/admin/cafeterias/{id}/operating-hours")
   public ResponseEntity<OperatingHoursResponse> createOperatingHoursByCafeteriaId(@PathVariable Long id,
-      @RequestBody @Valid OperatingHoursRequest request) {
+      @RequestBody OperatingHoursRequest request) {
 
     OperatingHoursResponse response = operatingHoursService.createOperatingHoursByCafeteriaId(request, id);
 

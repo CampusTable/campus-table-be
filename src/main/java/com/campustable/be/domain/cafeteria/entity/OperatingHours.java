@@ -39,9 +39,7 @@ public class OperatingHours {
   private Long operatingId;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "cafeteria_id", nullable = false,
-      foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT,
-          foreignKeyDefinition = "FOREIGN KEY (cafeteria_id) REFERENCES cafeterias (cafeteria_id) ON DELETE CASCADE"))
+  @JoinColumn(name = "cafeteria_id", nullable = false)
   private Cafeteria cafeteria;
 
   @Enumerated(EnumType.STRING)
@@ -65,10 +63,20 @@ public class OperatingHours {
   private LocalTime closeTime;
 
   public void update(OperatingHoursRequest request) {
-    this.dayOfWeek = request.getDayOfWeek();
-    this.breaksStartTime = request.getBreaksStartTime();
-    this.breaksCloseTime = request.getBreaksCloseTime();
-    this.openTime = request.getOpenTime();
-    this.closeTime = request.getCloseTime();
+    if (request.getDayOfWeek() != null) {
+      this.dayOfWeek = request.getDayOfWeek();
+    }
+    if (request.getBreaksStartTime() != null) {
+      this.breaksStartTime = request.getBreaksStartTime();
+    }
+    if (request.getBreaksCloseTime() != null) {
+      this.breaksCloseTime = request.getBreaksCloseTime();
+    }
+    if (request.getOpenTime() != null) {
+      this.openTime = request.getOpenTime();
+    }
+    if (request.getCloseTime() != null) {
+      this.closeTime = request.getCloseTime();
+    }
   }
 }
