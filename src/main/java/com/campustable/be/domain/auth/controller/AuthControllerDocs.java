@@ -2,12 +2,12 @@ package com.campustable.be.domain.auth.controller;
 
 import com.campustable.be.domain.auth.dto.AuthResponse;
 import com.campustable.be.domain.auth.dto.LoginRequest;
+import com.campustable.be.domain.auth.dto.ReissueRequest; // ReissueRequest 사용
 import com.campustable.be.domain.auth.dto.TokenReissueResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import java.io.IOException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody; // @RequestBody 사용
 
 public interface AuthControllerDocs {
   @Operation(
@@ -22,7 +22,7 @@ public interface AuthControllerDocs {
         - `studentName` (String): 신규 회원인 경우 이름 반환, 기존 회원은 `null`
         - `isNewUser` (boolean): 신규 회원 여부 (`true`면 신규 회원)
         - `accessToken` (String): 발급된 Access Token (JWT)
-        - (Set-Cookie) `refreshToken`: HttpOnly 쿠키에 저장되는 Refresh Token (응답 본문에는 포함되지 않음)
+        - **`refreshToken` (String): 발급된 Refresh Token (응답 본문에 포함됨)**
         - `maxAge` (Long): Refresh Token의 만료 시간(초 단위)
         
         ### 사용 방법
@@ -30,14 +30,13 @@ public interface AuthControllerDocs {
         2. 서버는 DB에서 학번을 조회합니다.
             - 기존 사용자: 비밀번호 검증 후 JWT 토큰 발급
             - 신규 사용자: 포털 로그인으로 인증 후 신규 사용자 등록
-        3. `accessToken`은 응답 본문으로, `refreshToken`은 HttpOnly 쿠키로 반환됩니다.
+        3. `accessToken`과 **`refreshToken` 모두 응답 본문으로 반환됩니다.**
         4. 이후 API 요청 시 `Authorization: Bearer <accessToken>` 헤더로 인증합니다.
         
         ### 유의 사항
         - `sejongPortalId`, `sejongPortalPassword`는 모두 필수입니다.
-        - Refresh Token은 HttpOnly 쿠키로만 전달되며, 클라이언트 자바스크립트에서 접근할 수 없습니다.
+        - **Refresh Token은 응답 본문으로 전달됩니다. (쿠키 방식 제거)**
         - 기존 회원은 `studentName` 필드가 `null`로 반환됩니다.
-        - HTTPS 환경에서만 정상 동작합니다. (쿠키에 `secure=true` 설정됨)
         
         ### 예외 처리
         - `AUTH_FAILED` (401): 아이디 또는 비밀번호가 올바르지 않은 경우
@@ -52,26 +51,25 @@ public interface AuthControllerDocs {
       summary = "Access Token 재발급",
       description = """
         ### 요청 파라미터
-        - (Cookie) `refreshToken` (String, required): 기존 로그인 시 발급받은 Refresh Token
+        - (Body) `refreshToken` (String, required): 기존 로그인 시 발급받은 Refresh Token
         
         ### 응답 데이터
         - `studentNumber` (String): 사용자 학번
         - `studentName` (String): 사용자 이름
         - `isNewUser` (boolean): 신규 회원 여부 (항상 `false`)
         - `accessToken` (String): 새로 발급된 Access Token (JWT)
-        - (Set-Cookie) `refreshToken`: HttpOnly 쿠키에 저장되는 새 Refresh Token
+        - **`refreshToken` (String): 새로 발급된 Refresh Token (응답 본문에 포함됨)**
         - `maxAge` (Long): 새 Refresh Token의 만료 시간(초 단위)
         
         ### 사용 방법
-        1. 기존 로그인 세션이 만료된 경우, 브라우저의 쿠키에 저장된 `refresh_token`으로 이 API를 호출합니다.
-        2. 서버가 Refresh Token을 검증하고, 새 Access Token 및 Refresh Token을 발급합니다.
-        3. 새로 발급된 Access Token을 사용해 다시 인증이 필요한 API를 호출할 수 있습니다.
+        1. Access Token이 만료된 경우, 기존 Refresh Token을 **요청 본문**으로 전송하여 이 API를 호출합니다.
+        2. 서버가 Refresh Token을 검증하고, 새 Access Token 및 Refresh Token을 발급하여 **응답 본문**으로 반환합니다.
+        3. 새로 발급된 Access Token과 Refresh Token을 사용하여 세션을 갱신합니다.
         
         ### 유의 사항
-        - 반드시 쿠키에 `refreshToken`이 존재해야 합니다.
+        - Refresh Token은 요청 본문(`ReissueRequest`)을 통해 전달됩니다.
         - 유효하지 않거나 만료된 Refresh Token은 사용할 수 없습니다.
-        - 새로 발급된 Refresh Token은 쿠키에 자동으로 갱신 저장됩니다.
-        - HTTPS 환경에서만 정상 동작합니다. (`secure=true`, `httpOnly=true`)
+        - 새로 발급된 Refresh Token은 **응답 본문으로 전달됩니다. (쿠키 방식 제거)**
         
         ### 예외 처리
         - `REFRESH_TOKEN_NOT_FOUND` (404): 리프레시 토큰이 존재하지 않거나 비어있는 경우
@@ -81,7 +79,5 @@ public interface AuthControllerDocs {
         """
   )
   public ResponseEntity<TokenReissueResponse> issueAccessToken(
-      @CookieValue(name="refreshToken", required = false) String refreshToken);
-
-
+      @RequestBody ReissueRequest reissueRequest);
 }

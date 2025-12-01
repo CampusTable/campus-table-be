@@ -27,7 +27,7 @@ public class User extends BaseTimeEntity {
   private String studentNumber;
 
   @Column(nullable = false, length = 10)
-  private String role = "ROLE_USER";
+  private String role = "USER";
 
   @Column(name = "user_name", length = 20)
   private String userName;
