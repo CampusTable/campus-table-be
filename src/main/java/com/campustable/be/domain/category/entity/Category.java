@@ -1,7 +1,6 @@
 package com.campustable.be.domain.category.entity;
 
 import com.campustable.be.domain.cafeteria.entity.Cafeteria;
-import com.campustable.be.domain.category.dto.CategoryRequest;
 import com.campustable.be.domain.category.dto.CategoryUpdateRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,6 +32,7 @@ public class Category {
   @Column(name = "category_id")
   private Long categoryId;
 
+  @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "cafeteria_id", nullable = false)
   private Cafeteria cafeteria;

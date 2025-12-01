@@ -3,6 +3,7 @@ package com.campustable.be.domain.menu.entity;
 import com.campustable.be.domain.category.entity.Category;
 import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,6 +28,7 @@ public class Menu {
   @Column(name = "menu_id")
   private Long id;
 
+  @NotNull
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "category_id", nullable = false)
   private Category category;
@@ -63,22 +65,23 @@ public class Menu {
     updatedAt = LocalDateTime.now();
   }
 
-  public void update(MenuUpdateRequest requestDto) {
+  public void update(MenuUpdateRequest request) {
 
-    if (requestDto.getPrice() != null) {
-      this.setPrice(requestDto.getPrice());
+    if(request.getMenuName() != null &&  !request.getMenuName().isEmpty()) {
+      this.menuName = request.getMenuName();
     }
-    if (requestDto.getMenuUrl() != null && !requestDto.getMenuUrl().isBlank()) {
-      this.setMenuUrl(requestDto.getMenuUrl());
+    if (request.getPrice() != null) {
+      this.price=request.getPrice();
     }
-    if (requestDto.getAvailable() != null) {
-      this.setAvailable(requestDto.getAvailable());
+    if (request.getMenuUrl() != null && !request.getMenuUrl().isBlank()) {
+      this.menuUrl = request.getMenuUrl();
     }
-    if (requestDto.getStockQuantity() != null) {
-      this.setStockQuantity(requestDto.getStockQuantity());
+    if (request.getAvailable() != null) {
+      this.available = request.getAvailable();
     }
-
-
+    if (request.getStockQuantity() != null) {
+      this.stockQuantity = request.getStockQuantity();
+    }
   }
 
 }

@@ -93,8 +93,6 @@ public class MenuService {
       if (menuRepository.findByCategoryAndMenuName(menu.get().getCategory(), request.getMenuName()).isPresent()) {
         throw new CustomException(ErrorCode.MENU_ALREADY_EXISTS);
       }
-      // 중복이 아니면 이름 변경
-      menu.get().setMenuName(request.getMenuName());
     }
 
     menu.get().update(request);
