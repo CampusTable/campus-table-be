@@ -2,16 +2,14 @@ package com.campustable.be.domain.auth.controller;
 
 import com.campustable.be.domain.auth.dto.AuthResponse;
 import com.campustable.be.domain.auth.dto.LoginRequest;
+import com.campustable.be.domain.auth.dto.ReissueRequest;
 import com.campustable.be.domain.auth.dto.TokenReissueResponse;
 import com.campustable.be.domain.auth.service.AuthService;
 import com.campustable.be.global.aop.LogMonitoringInvocation;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,45 +34,22 @@ public class AuthController implements AuthControllerDocs {
 
     AuthResponse response = authService.login(loginRequest);
 
-    String refreshToken = response.getRefreshToken();
-
-    ResponseCookie cookie = ResponseCookie.from("refreshToken",refreshToken)
-        .httpOnly(true)
-        .secure(true)
-        .path("/")
-        .sameSite("Strict")
-        .maxAge(response.getMaxAgeSeconds())
-        .build();
-
-    response.setRefreshToken(null);
-
     log.info("로그인 성공 - 학번: {}, 신규유저: {}",
         response.getStudentNumber(), response.isNewUser());
 
     return ResponseEntity.ok()
-        .header(HttpHeaders.SET_COOKIE, cookie.toString())
         .body(response);
   }
 
   @Override
   @LogMonitoringInvocation
-  @PostMapping("/issue")
+  @PostMapping("/reissue")
   public ResponseEntity<TokenReissueResponse> issueAccessToken(
-      @CookieValue(name="refreshToken") String refreshToken) {
+      @RequestBody ReissueRequest reissueRequest) {
 
-    TokenReissueResponse response = authService.reissueToken(refreshToken);
-
-    ResponseCookie cookie = ResponseCookie.from("refreshToken",response.getRefreshToken())
-        .httpOnly(true)
-        .secure(true)
-        .sameSite("Strict")
-        .maxAge(response.getMaxAge())
-        .build();
-
-    response.setRefreshToken(null);
+    TokenReissueResponse response = authService.reissueToken(reissueRequest.getRefreshToken());
 
     return ResponseEntity.ok()
-        .header(HttpHeaders.SET_COOKIE, cookie.toString())
         .body(response);
   }
 }
