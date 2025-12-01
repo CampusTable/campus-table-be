@@ -1,7 +1,6 @@
 package com.campustable.be.domain.auth.security;
 
 import com.campustable.be.domain.auth.provider.JwtProvider;
-import com.campustable.be.domain.auth.repository.RefreshTokenRepository;
 import com.campustable.be.domain.auth.service.CustomUserDetailService;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
@@ -10,7 +9,6 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -34,7 +32,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtProvider jwtProvider;
   private final CustomUserDetailService userDetailsService;
   private final ObjectMapper objectMapper;
-  private final RefreshTokenRepository refreshTokenRepository;
   private static final List<String> EXCLUSION_URL_PATTERNS = List.of(
       "/api/auth",
       "/swagger-ui",
@@ -67,34 +64,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
       } catch (ExpiredJwtException e) {
-        String refreshToken = extractRefreshTokenFromCookies(request);
-        if (StringUtils.hasText(refreshToken)) {
-          try {
-            String jti = jwtProvider.getJti(refreshToken);
-            if (refreshTokenRepository.findById(jti).isPresent()) {
-              writeErrorResponse(response, ErrorCode.ACCESS_TOKEN_EXPIRED);
-              return;
-            }
-          } catch (CustomException | JwtException ex) {
-            // 리프레시 토큰 자체가 유효하지 않거나 만료된 경우
-            log.warn("Refresh Token 검증 실패: {}", ex.getMessage());
-            writeErrorResponse(response, ErrorCode.REFRESH_TOKEN_INVALID);
-            return;
-          } catch (Exception ex) {
-            // Redis 장애 등 예기치 못한 서버 오류
-            log.error("Refresh Token 검증 중 서버 에러: {}", ex.getMessage(), ex);
-            writeErrorResponse(response, ErrorCode.INTERNAL_SERVER_ERROR);
-            return;
-          }
-        }
-        writeErrorResponse(response, ErrorCode.REFRESH_TOKEN_EXPIRED);
+        writeErrorResponse(response, ErrorCode.ACCESS_TOKEN_EXPIRED);
         return ;
-      } catch (CustomException e) {
-        writeErrorResponse(response, e.getErrorCode());
-        return ;
-      }
-      catch (JwtException e) {
+      } catch (JwtException e) {
         writeErrorResponse(response, ErrorCode.JWT_INVALID);
+        return ;
+      } catch(CustomException e){
+        writeErrorResponse(response, e.getErrorCode());
         return ;
       } catch (Exception e) {
         // 6. 그 외 예상치 못한 모든 오류
@@ -114,19 +90,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     return EXCLUSION_URL_PATTERNS.stream()
         .anyMatch(path::startsWith);
-  }
-
-  private String extractRefreshTokenFromCookies(HttpServletRequest request) {
-    Cookie[] cookies = request.getCookies();
-
-    if (cookies != null) {
-      for (Cookie cookie : cookies) {
-        if ("refreshToken".equals(cookie.getName())) {
-          return cookie.getValue(); // Refresh Token 문자열 반환
-        }
-      }
-    }
-    return null; // 토큰을 찾지 못한 경우
   }
 
   private void writeErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {

@@ -2,6 +2,7 @@ package com.campustable.be.domain.auth.controller;
 
 import com.campustable.be.domain.auth.dto.AuthResponse;
 import com.campustable.be.domain.auth.dto.LoginRequest;
+import com.campustable.be.domain.auth.dto.ReissueRequest;
 import com.campustable.be.domain.auth.dto.TokenReissueResponse;
 import com.campustable.be.domain.auth.service.AuthService;
 import com.campustable.be.global.aop.LogMonitoringInvocation;
@@ -38,44 +39,22 @@ public class AuthController implements AuthControllerDocs {
 
     String refreshToken = response.getRefreshToken();
 
-    ResponseCookie cookie = ResponseCookie.from("refreshToken",refreshToken)
-        .httpOnly(true)
-        .secure(true)
-        .path("/")
-        .sameSite("Strict")
-        .maxAge(response.getMaxAgeSeconds())
-        .build();
-
-    response.setRefreshToken(null);
-
     log.info("로그인 성공 - 학번: {}, 신규유저: {}",
         response.getStudentNumber(), response.isNewUser());
 
     return ResponseEntity.ok()
-        .header(HttpHeaders.SET_COOKIE, cookie.toString())
         .body(response);
   }
 
   @Override
   @LogMonitoringInvocation
-  @PostMapping("/issue")
+  @PostMapping("/reissue")
   public ResponseEntity<TokenReissueResponse> issueAccessToken(
-      @CookieValue(name="refreshToken") String refreshToken) {
+      @RequestBody ReissueRequest reissueRequest) {
 
-    TokenReissueResponse response = authService.reissueToken(refreshToken);
-
-    ResponseCookie cookie = ResponseCookie.from("refreshToken",response.getRefreshToken())
-        .httpOnly(true)
-        .secure(true)
-        .path("/")
-        .sameSite("Strict")
-        .maxAge(response.getMaxAge())
-        .build();
-
-    response.setRefreshToken(null);
+    TokenReissueResponse response = authService.reissueToken(reissueRequest.getRefreshToken());
 
     return ResponseEntity.ok()
-        .header(HttpHeaders.SET_COOKIE, cookie.toString())
         .body(response);
   }
 }
