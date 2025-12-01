@@ -21,11 +21,11 @@ spring:
 
 springdoc:
   servers:
-    - url: https://43.201.107.56:8087
+    - url: https://api.campustable.shop
       description: main-server
-    - url: https://43.201.107.56:8088
+    - url: https://api.test.campustable.shop
       description: test-server
-    - url: https://localhost:8080
+    - url: http://localhost:8080
       description: local-server
 
   default-consumes-media-type: application/json;charset=UTF-8

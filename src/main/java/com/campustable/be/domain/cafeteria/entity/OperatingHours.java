@@ -1,18 +1,25 @@
 package com.campustable.be.domain.cafeteria.entity;
 
 
+import com.campustable.be.domain.cafeteria.dto.OperatingHoursRequest;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,6 +28,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Table(name = "operating_hours")
 public class OperatingHours {
 
@@ -30,17 +39,44 @@ public class OperatingHours {
   private Long operatingId;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name="cafeteria_id", nullable = false)
+  @JoinColumn(name = "cafeteria_id", nullable = false)
   private Cafeteria cafeteria;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "day_of_week", nullable = false, length = 3)
   private DayOfWeekEnum dayOfWeek;
 
+  @Column(name = "break_open_time")
+  @JsonFormat(pattern="HH:mm")
+  private LocalTime breaksStartTime;
+
+  @Column(name = "break_close_time")
+  @JsonFormat(pattern="HH:mm")
+  private LocalTime breaksCloseTime;
+
   @Column(name = "open_time", nullable = false)
+  @JsonFormat(pattern="HH:mm")
   private LocalTime openTime;
 
   @Column(name = "close_time", nullable = false)
+  @JsonFormat(pattern="HH:mm")
   private LocalTime closeTime;
 
+  public void update(OperatingHoursRequest request) {
+    if (request.getDayOfWeek() != null) {
+      this.dayOfWeek = request.getDayOfWeek();
+    }
+    if (request.getBreaksStartTime() != null) {
+      this.breaksStartTime = request.getBreaksStartTime();
+    }
+    if (request.getBreaksCloseTime() != null) {
+      this.breaksCloseTime = request.getBreaksCloseTime();
+    }
+    if (request.getOpenTime() != null) {
+      this.openTime = request.getOpenTime();
+    }
+    if (request.getCloseTime() != null) {
+      this.closeTime = request.getCloseTime();
+    }
+  }
 }
