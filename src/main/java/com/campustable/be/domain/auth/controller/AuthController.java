@@ -67,6 +67,7 @@ public class AuthController implements AuthControllerDocs {
     ResponseCookie cookie = ResponseCookie.from("refreshToken",response.getRefreshToken())
         .httpOnly(true)
         .secure(true)
+        .path("/")
         .sameSite("Strict")
         .maxAge(response.getMaxAge())
         .build();
