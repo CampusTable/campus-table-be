@@ -9,10 +9,7 @@ import com.campustable.be.global.aop.LogMonitoringInvocation;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,8 +33,6 @@ public class AuthController implements AuthControllerDocs {
   public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) throws IOException {
 
     AuthResponse response = authService.login(loginRequest);
-
-    String refreshToken = response.getRefreshToken();
 
     log.info("로그인 성공 - 학번: {}, 신규유저: {}",
         response.getStudentNumber(), response.isNewUser());
