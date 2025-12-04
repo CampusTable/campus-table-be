@@ -25,7 +25,7 @@ public enum ErrorCode {
   SSO_AUTH_FAILED(HttpStatus.UNAUTHORIZED, "SSO 인증에 실패했습니다."),
 
   SCRAPING_STRUCTURE_CHANGED(HttpStatus.INTERNAL_SERVER_ERROR, "대상 웹사이트의 구조가 변경되어 데이터를 가져올 수 없습니다."),
-
+  
   ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED,"Access Token이 만료되었습니다. 재발급이 필요합니다."),
 
   JWT_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 인증 정보입니다. 다시 로그인해 주세요."),
@@ -33,6 +33,20 @@ public enum ErrorCode {
   REFRESH_TOKEN_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 리프레시 토큰입니다. 다시 로그인해 주세요."),
 
   REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "리프레시토큰이 만료되었습니다. 다시 로그인해 주세요."),
+
+  // MENU
+  
+  MENU_ALREADY_EXISTS(HttpStatus.CONFLICT, "해당 식당에 이미 존재하는 메뉴입니다."),
+
+  MENU_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 메뉴를 찾을 수 없습니다."),
+
+  CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카테고리를 찾을 수 없습니다."),
+
+  INVALID_MENU_NAME(HttpStatus.BAD_REQUEST, "메뉴 이름을 입력해 주세요."),
+
+  INVALID_MENU_PRICE(HttpStatus.BAD_REQUEST, "메뉴 가격은 0원 이상이어야 합니다."),
+
+  INVALID_MENU_AVAILABILITY(HttpStatus.BAD_REQUEST, "메뉴 판매 여부를 입력해주세요"),
 
   // Cafeteria
 
