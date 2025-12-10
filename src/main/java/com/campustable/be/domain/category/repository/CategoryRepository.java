@@ -10,8 +10,6 @@ public interface CategoryRepository extends JpaRepository<Category,Long> {
 
     List<Category> findByCafeteria(Cafeteria cafeteria);
 
-  Optional<Category> findByCategoryName(String categoryName);
-
   Optional<Category> findByCafeteriaAndCategoryName(Cafeteria cafeteria, String categoryName);
 
 }
