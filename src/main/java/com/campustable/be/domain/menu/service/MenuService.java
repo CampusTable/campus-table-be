@@ -1,6 +1,8 @@
 package com.campustable.be.domain.menu.service;
 
 
+import com.campustable.be.domain.cafeteria.entity.Cafeteria;
+import com.campustable.be.domain.cafeteria.service.CafeteriaService;
 import com.campustable.be.domain.category.entity.Category;
 import com.campustable.be.domain.category.repository.CategoryRepository;
 import com.campustable.be.domain.menu.dto.MenuRequest;
@@ -11,6 +13,7 @@ import com.campustable.be.domain.menu.repository.MenuRepository;
 import com.campustable.be.global.aop.LogMonitoringInvocation;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
+import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +32,7 @@ public class MenuService {
 
   private final MenuRepository menuRepository;
   private final CategoryRepository categoryRepository;
+  private final CafeteriaService cafeteriaService;
 
 
   @Transactional
@@ -78,6 +82,23 @@ public class MenuService {
 
   }
 
+  @Transactional(readOnly = true)
+  public List<MenuResponse> getAllMenusByCafeteriaId(Long cafeteriaId) {
+    // TODO: 임시로 작성한 메서드. 추후 성능 개선 필요
+    Cafeteria cafeteria = cafeteriaService.findCafeteriaById(cafeteriaId);
+    List<Category> categories = categoryRepository.findByCafeteria(cafeteria);
+    List<Menu> menus = new ArrayList<>();
+    for (Category category : categories) {
+      List<Menu> menusByCategory = menuRepository.findByCategory(category);
+      menus.addAll(menusByCategory);
+    }
+
+    List<MenuResponse> responses = new ArrayList<>();
+    for (Menu menu : menus) {
+      responses.add(MenuResponse.from(menu));
+    }
+    return responses;
+  }
 
   @Transactional
   public MenuResponse updateMenu(Long menuId, MenuUpdateRequest request) {
