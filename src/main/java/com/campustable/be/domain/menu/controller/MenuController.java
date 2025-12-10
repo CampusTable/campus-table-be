@@ -44,7 +44,16 @@ public class MenuController implements MenuControllerDocs {
 
     }
 
-    @Override
+  @Override
+  @LogMonitoringInvocation
+  @GetMapping("/cafeteria/{cafeteria-id}")
+  public ResponseEntity<List<MenuResponse>> getAllMenusByCafeteriaId(
+    @PathVariable(name = "cafeteria-id") Long cafeteriaId
+  ) {
+    return ResponseEntity.ok(menuService.getAllMenusByCafeteriaId(cafeteriaId));
+  }
+
+  @Override
     @PostMapping
     @LogMonitoringInvocation
     public ResponseEntity<MenuResponse> createMenu(@Valid @RequestBody MenuRequest createRequest){

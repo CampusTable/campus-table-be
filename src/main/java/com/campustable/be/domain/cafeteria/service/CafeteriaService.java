@@ -35,14 +35,8 @@ public class CafeteriaService {
 
   @Transactional(readOnly = true)
   public CafeteriaResponse findCafeteria(Long id){
-
-    Optional<Cafeteria> cafeteria = cafeteriaRepository.findById(id);
-    if (cafeteria.isEmpty()) {
-      log.error("id에 해당하는 식당이 존재하지 않습니다.");
-      throw new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
-    }
-
-    return CafeteriaResponse.from(cafeteria.get());
+    Cafeteria cafeteria = findCafeteriaById(id);
+    return CafeteriaResponse.from(cafeteria);
   }
 
   @Transactional(readOnly = true)
@@ -78,5 +72,13 @@ public class CafeteriaService {
     }
 
     cafeteriaRepository.delete(cafeteria.get());
+  }
+
+  public Cafeteria findCafeteriaById(Long cafeteriaId) {
+    return cafeteriaRepository.findById(cafeteriaId)
+      .orElseThrow(() -> {
+        log.error("PK: {} 에 해당하는 식당 정보를 찾을 수 없습니다.", cafeteriaId);
+        return new CustomException(ErrorCode.CAFETERIA_NOT_FOUND);
+      });
   }
 }
