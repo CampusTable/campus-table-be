@@ -6,6 +6,7 @@ import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
 import com.campustable.be.domain.menu.service.MenuService;
 import com.campustable.be.global.aop.LogMonitoringInvocation;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +45,12 @@ public class MenuController implements MenuControllerDocs {
 
     }
 
-    @Override
+  @Override
+  public ResponseEntity<List<MenuResponse>> getAllMenusByCategoryName(@NotBlank String categoryName) {
+    return ResponseEntity.ok(menuService.getAllMenusByCategoryName(categoryName));
+  }
+
+  @Override
     @PostMapping
     @LogMonitoringInvocation
     public ResponseEntity<MenuResponse> createMenu(@Valid @RequestBody MenuRequest createRequest){

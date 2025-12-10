@@ -78,6 +78,17 @@ public class MenuService {
 
   }
 
+  @Transactional(readOnly = true)
+  public List<MenuResponse> getAllMenusByCategoryName(String categoryName) {
+    Category category = categoryRepository.findByCategoryName(categoryName)
+      .orElseThrow(() -> {
+        log.error("카테고리 명: {}에 해당하는 Category 객체를 찾을 수 없습니다.", categoryName);
+        return new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
+      });
+    List<Menu> menus = menuRepository.findByCategory(category);
+    return menus.stream().map(MenuResponse::from).toList();
+  }
+
 
   @Transactional
   public MenuResponse updateMenu(Long menuId, MenuUpdateRequest request) {

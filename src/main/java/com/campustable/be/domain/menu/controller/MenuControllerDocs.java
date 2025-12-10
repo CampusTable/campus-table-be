@@ -32,6 +32,11 @@ public interface MenuControllerDocs {
             Long categoryId
     );
 
+    @Operation(summary = "카테고리 명 메뉴 조회", description = "카테고리 이름에 해당하는 메뉴 목록을 조회합니다.")
+    ResponseEntity<List<MenuResponse>> getAllMenusByCategoryName(
+      String categoryName
+    );
+
     @Operation(
             summary = "신규 메뉴 생성 (관리자 전용)",
             description = "새로운 메뉴를 등록합니다."
