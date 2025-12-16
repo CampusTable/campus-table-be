@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtProvider {
 
-  private final String secretKeyString;
   @Getter
   private final long expirationInMs;
   @Getter
@@ -31,7 +30,6 @@ public class JwtProvider {
       @Value("${jwt.expiration-time}") long expirationInMs,
       @Value("${jwt.refresh-expiration-time}") long refreshInMs
       ) {
-    this.secretKeyString = secretKeyString;
     this.expirationInMs = expirationInMs;
     this.refreshInMs = refreshInMs;
     this.secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes(StandardCharsets.UTF_8));
@@ -76,7 +74,7 @@ public class JwtProvider {
       throw new CustomException(ErrorCode.JWT_INVALID);
     }
     if (id == null || id.isBlank()) {
-      log.warn("JWT Subject 클레임이 비어 있습니다.");
+      log.error("JWT Subject 클레임이 비어 있습니다.");
       throw new CustomException(ErrorCode.JWT_INVALID);
     }
 
@@ -91,17 +89,17 @@ public class JwtProvider {
         .getPayload();
     }
 
-  private Map<String,Object> setClaims(User user, Long additionalMs){
+  private Map<String,Object> setClaims(User user, long additionalMs){
 
     Map<String,Object> claims = new HashMap<>();
 
-    Long nowMs = System.currentTimeMillis() / 1000;
-    Long validMs = nowMs + additionalMs / 1000;
+    long nowMs = System.currentTimeMillis();
+    long validMs = nowMs + additionalMs;
 
     claims.put("role", user.getRole());
     claims.put("sub", user.getUserId().toString());
-    claims.put("iat", nowMs);
-    claims.put("exp", validMs);
+    claims.put("iat", nowMs / 1000);
+    claims.put("exp", validMs / 1000);
 
     return claims;
   }
@@ -115,12 +113,12 @@ public class JwtProvider {
       String jti = (String) claims.get("jti");
       if (jti == null || jti.isBlank()) {
         log.error("jti가 리프레시토큰에 유효하지않습니다.");
-        throw new CustomException(ErrorCode.JWT_INVALID);
+        throw new CustomException(ErrorCode.REFRESH_TOKEN_INVALID);
       }
       return jti;
     } catch (Exception e) {
       log.error("refreshToken이 유효하지 않습니다. {}",e.getMessage());
-      throw new CustomException(ErrorCode.JWT_INVALID);
+      throw new CustomException(ErrorCode.REFRESH_TOKEN_INVALID);
     }
   }
 }
