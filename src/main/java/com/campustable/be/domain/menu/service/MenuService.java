@@ -55,7 +55,7 @@ public class MenuService {
 
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   public MenuResponse getMenuById(Long menuId) {
 
     Menu menu = menuRepository.findById(menuId)

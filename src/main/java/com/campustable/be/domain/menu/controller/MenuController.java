@@ -45,6 +45,7 @@ public class MenuController implements MenuControllerDocs {
 
     }
 
+    @Override
     @LogMonitoringInvocation
     @GetMapping("/{menuId}")
     public ResponseEntity<MenuResponse> getMenuById(@PathVariable Long menuId){
