@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -42,8 +43,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(
       HttpServletRequest request,
-      HttpServletResponse response,
-      FilterChain chain) throws ServletException, IOException {
+      @NonNull HttpServletResponse response,
+      @NonNull FilterChain chain) throws ServletException, IOException {
 
     String jwt;
     String bearerToken = request.getHeader("Authorization");
@@ -84,7 +85,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   @Override
-  protected boolean shouldNotFilter(HttpServletRequest request) {
+  protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
 
     String path = new UrlPathHelper().getRequestUri(request);
 
