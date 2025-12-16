@@ -32,7 +32,7 @@ public enum ErrorCode {
 
   REFRESH_TOKEN_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 리프레시 토큰입니다. 다시 로그인해 주세요."),
 
-  REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "리프레시토큰이 만료되었습니다. 다시 로그인해 주세요."),
+  REFRESH_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST, "리프레시토큰이 만료되었습니다. 다시 로그인해 주세요."),
   // MENU
   MENU_ALREADY_EXISTS(HttpStatus.CONFLICT, "해당 식당에 이미 존재하는 메뉴입니다."),
 
