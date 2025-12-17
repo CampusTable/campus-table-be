@@ -10,17 +10,13 @@ import com.campustable.be.domain.menu.dto.MenuResponse;
 import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
 import com.campustable.be.domain.menu.entity.Menu;
 import com.campustable.be.domain.menu.repository.MenuRepository;
-import com.campustable.be.global.aop.LogMonitoringInvocation;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import java.util.ArrayList;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +37,7 @@ public class MenuService {
     Category category = categoryRepository.findById(request.getCategoryId())
         .orElseThrow(() -> {
           log.warn("createMenu: 유효하지 않은 category id");
-          throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
+          return new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
         });
 
     Optional<Menu> existingMenu = menuRepository.findByCategoryAndMenuName(
@@ -60,6 +56,19 @@ public class MenuService {
   }
 
   @Transactional(readOnly = true)
+  public MenuResponse getMenuById(Long menuId) {
+
+    Menu menu = menuRepository.findById(menuId)
+        .orElseThrow(()->{
+          log.error("getMenuById : 유효하지않은 menuId");
+          return new CustomException(ErrorCode.MENU_NOT_FOUND);
+        });
+
+    return MenuResponse.from(menu);
+
+  }
+
+  @Transactional(readOnly = true)
   public List<MenuResponse> getAllMenus() {
 
     return menuRepository.findAll().stream()
@@ -73,7 +82,7 @@ public class MenuService {
     Category category = categoryRepository.findById(categoryId)
         .orElseThrow(() -> {
           log.warn("getAllMenusByCategory: 유효하지 않은 category id");
-          throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
+          return new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
         });
 
     List<Menu> menus = menuRepository.findByCategory(category);

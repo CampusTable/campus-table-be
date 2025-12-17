@@ -18,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MenuController implements MenuControllerDocs {
 
+
     private final MenuService menuService;
 
 
@@ -44,16 +45,23 @@ public class MenuController implements MenuControllerDocs {
 
     }
 
-  @Override
-  @LogMonitoringInvocation
-  @GetMapping("/cafeteria/{cafeteria-id}")
-  public ResponseEntity<List<MenuResponse>> getAllMenusByCafeteriaId(
-    @PathVariable(name = "cafeteria-id") Long cafeteriaId
-  ) {
-    return ResponseEntity.ok(menuService.getAllMenusByCafeteriaId(cafeteriaId));
-  }
+    @Override
+    @LogMonitoringInvocation
+    @GetMapping("/{menuId}")
+    public ResponseEntity<MenuResponse> getMenuById(@PathVariable Long menuId){
+      return ResponseEntity.ok(menuService.getMenuById(menuId));
+    }
 
-  @Override
+    @Override
+    @LogMonitoringInvocation
+    @GetMapping("/cafeteria/{cafeteria-id}")
+    public ResponseEntity<List<MenuResponse>> getAllMenusByCafeteriaId(
+      @PathVariable(name = "cafeteria-id") Long cafeteriaId
+    ) {
+      return ResponseEntity.ok(menuService.getAllMenusByCafeteriaId(cafeteriaId));
+    }
+
+    @Override
     @PostMapping
     @LogMonitoringInvocation
     public ResponseEntity<MenuResponse> createMenu(@Valid @RequestBody MenuRequest createRequest){

@@ -28,7 +28,7 @@ public enum ErrorCode {
 
   ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED,"Access Token이 만료되었습니다. 재발급이 필요합니다."),
 
-  JWT_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 인증 정보입니다. 다시 로그인해 주세요."),
+  JWT_INVALID(HttpStatus.UNAUTHORIZED, "유효하지 않은 인증 정보입니다. 다시 로그인해 주세요."),
 
   REFRESH_TOKEN_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 리프레시 토큰입니다. 다시 로그인해 주세요."),
 
