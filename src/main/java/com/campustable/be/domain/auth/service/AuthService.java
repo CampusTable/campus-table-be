@@ -113,7 +113,7 @@ public class AuthService {
     RefreshToken existingRefreshToken = refreshTokenRepository.findById(jti)
         .orElseThrow(()->{
           log.error("redis에 refreshToken이존재하지 않습니다.");
-          return new CustomException(ErrorCode.JWT_INVALID);
+          return new CustomException(ErrorCode.REFRESH_TOKEN_EXPIRED);
         });
     Long userId = existingRefreshToken.getUserId();
     refreshTokenRepository.delete(existingRefreshToken);
@@ -121,7 +121,7 @@ public class AuthService {
     User user = userRepository.findById(userId)
         .orElseThrow(()->{
           log.error("refreshToken에 해당하는 유저가 존재하지않습니다.");
-          return new CustomException(ErrorCode.USER_NOT_FOUND);
+          return new CustomException(ErrorCode.REFRESH_TOKEN_INVALID);
         });
 
     String refreshTokenId = UUID.randomUUID().toString();
