@@ -1,5 +1,6 @@
 package com.campustable.be.domain.user.entity;
 
+import com.campustable.be.domain.cart.entity.Cart;
 import com.campustable.be.domain.user.dto.UserRequest;
 import com.campustable.be.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -22,6 +23,9 @@ public class User extends BaseTimeEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "user_id")
   private Long userId;
+
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private Cart cart;
 
   @Column(name = "student_number", unique = true, length = 20)
   private String studentNumber;
