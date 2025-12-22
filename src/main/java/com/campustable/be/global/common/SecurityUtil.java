@@ -26,7 +26,7 @@ public class SecurityUtil {
     try {
       return Long.parseLong(authentication.getName());
     } catch (NumberFormatException e) {
-      throw new RuntimeException("유저 ID 형식이 올바르지 않습니다.");
+      throw new CustomException(ErrorCode.USER_NOT_FOUND);
     }
   }
 
