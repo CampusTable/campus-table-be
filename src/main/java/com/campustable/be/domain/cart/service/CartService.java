@@ -103,7 +103,15 @@ public class CartService {
       throw new CustomException(ErrorCode.ACCESS_DENIED);
     }
 
+    Cart cart = cartItem.getCart();
     cartItemRepository.delete(cartItem);
+
+    cartItemRepository.flush();
+
+    if (cartItemRepository.findByCart(cart).isEmpty()) {
+      cart.getUser().setCart(null);
+      cartRepository.delete(cart);
+    }
 
   }
 

@@ -28,14 +28,14 @@ public class CartController implements CartControllerDocs{
   @Override
   @PostMapping("/items")
   public ResponseEntity<CartResponse> addOrUpdateItems(@RequestBody CartRequest request) {
-    CartResponse response = cartService.updateCartItem(request.getMenu_id(), request.getQuantity());
+    CartResponse response = cartService.updateCartItem(request.getMenuId(), request.getQuantity());
 
     return ResponseEntity.ok(response);
   }
 
   @LogMonitoringInvocation
   @Override
-  @GetMapping("/")
+  @GetMapping("")
   public ResponseEntity<CartResponse> getCart(){
 
     CartResponse response = cartService.getCart();
