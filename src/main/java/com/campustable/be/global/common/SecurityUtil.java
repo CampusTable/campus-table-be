@@ -16,7 +16,7 @@ public class SecurityUtil {
     final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     // 2. 인증 정보가 없거나 익명 사용자인 경우 처리
-    if (authentication == null || authentication.getName() == null) {
+    if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
       log.error("SecurityUtil class에서 시큐리티 컨텍스트 홀더에 유저가 존재하지않아 에러발생.");
       throw new CustomException(ErrorCode.USER_NOT_FOUND);
     }

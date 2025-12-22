@@ -73,6 +73,7 @@ public class CartService {
         toList();
 
     if (cartItems.isEmpty()) {
+      cart.getUser().setCart(null);
       cartRepository.delete(cart);
       return CartResponse.builder()
           .items(List.of())
@@ -93,16 +94,33 @@ public class CartService {
 
   public void deleteCartItem(Long cartItemId) {
 
-    cartItemRepository.deleteById(cartItemId);
+    Long userId = SecurityUtil.getCurrentUserId(); // JWT에서 추출한 유저 ID
+
+    CartItem cartItem = cartItemRepository.findById(cartItemId)
+            .orElseThrow(()-> new CustomException(ErrorCode.CART_ITEM_NOT_FOUND));
+
+    if (!cartItem.getCart().getUser().getUserId().equals(userId)) {
+      throw new CustomException(ErrorCode.ACCESS_DENIED);
+    }
+
+    cartItemRepository.delete(cartItem);
+
   }
 
   public void deleteCart(Long cartId) {
+
+    Long userId = SecurityUtil.getCurrentUserId();
+
     Cart cart = cartRepository.findById(cartId)
-            .orElseThrow(()-> new CustomException(ErrorCode.CART_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.CART_NOT_FOUND));
 
-    cart.setUser(null);
+    if (!cart.getUser().getUserId().equals(userId)) {
+      throw new CustomException(ErrorCode.ACCESS_DENIED);
+    }
 
-    cartRepository.deleteById(cartId);
+    cart.getUser().setCart(null);
+
+    cartRepository.delete(cart);
   }
 
   public CartResponse getCart(){
