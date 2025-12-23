@@ -63,7 +63,13 @@ public enum ErrorCode {
   //User
   USER_NOT_FOUND(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."),
 
-  USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 유저입니다.");
+  USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 유저입니다."),
+
+  //Cart
+  CART_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니를 찾을수 없습니다."),
+
+  CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니 개별목록을 찾을수 없습니다.");
+
 
 
   private final HttpStatus status;
