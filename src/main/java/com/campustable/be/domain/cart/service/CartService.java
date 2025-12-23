@@ -88,7 +88,7 @@ public class CartService {
     return CartResponse.builder().
         items(cartItems)
         .totalPrice(totalPrice)
-        .cartId(cart.getCart_id())
+        .cartId(cart.getCartId())
         .build();
   }
 
@@ -154,7 +154,7 @@ public class CartService {
       return CartResponse.builder().
           items(cartItems)
           .totalPrice(totalPrice)
-          .cartId(cart.get().getCart_id())
+          .cartId(cart.get().getCartId())
           .build();
     }
     else{
