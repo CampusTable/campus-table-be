@@ -2,10 +2,11 @@ package com.campustable.be.domain.order.service;
 
 import com.campustable.be.domain.cart.entity.Cart;
 import com.campustable.be.domain.cart.repository.CartRepository;
-import com.campustable.be.domain.order.dto.OrderItemDto;
+import com.campustable.be.domain.menu.entity.Menu;
 import com.campustable.be.domain.order.dto.OrderResponse;
 import com.campustable.be.domain.order.entity.Order;
 import com.campustable.be.domain.order.entity.OrderItem;
+import com.campustable.be.domain.order.repository.OrderItemRepository;
 import com.campustable.be.domain.order.repository.OrderRepository;
 import com.campustable.be.domain.user.entity.User;
 import com.campustable.be.domain.user.repository.UserRepository;
@@ -14,18 +15,22 @@ import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional
 public class OrderService {
+
   private final OrderRepository orderRepository;
   private final CartRepository cartRepository;
   private final UserRepository userRepository;
+  private final OrderItemRepository orderItemRepository;
 
-  public OrderResponse createOrder(){
+  public OrderResponse createOrder() {
     Long userId = SecurityUtil.getCurrentUserId();
 
     User user = userRepository.findById(userId)
@@ -39,11 +44,17 @@ public class OrderService {
     }
 
     List<OrderItem> orderItems = cart.getCartItems().stream()
-        .map(cartItem-> OrderItem.createOrderItem(
-            cartItem.getMenu(),
-            cartItem.getMenu().getPrice(),
-            cartItem.getQuantity()
-        ))
+        .map(cartItem -> {
+
+          Menu menu = cartItem.getMenu();
+          menu.decreaseStockQuantity(cartItem.getQuantity());
+
+          return OrderItem.createOrderItem(
+              menu,
+              menu.getPrice(),
+              cartItem.getQuantity()
+          );
+        })
         .toList();
 
     Order order = Order.createOrder(user, orderItems);
@@ -52,57 +63,52 @@ public class OrderService {
     user.setCart(null);
     cartRepository.delete(cart);
 
-    return OrderResponse.builder()
-        .orderId(order.getOrderId())
-        .totalPrice(order.getTotalPrice())
-        .status(order.getStatus())
-        .orderDate(order.getCreatedAt())
-        .orderItems(order.getOrderItems().stream()
-            .map(OrderItemDto::new)
-            .toList())
-        .build();
+    return OrderResponse.from(order);
   }
 
-  public OrderResponse updateToReady(Long orderId) {
-    Order order = orderRepository.findById(orderId)
-        .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+  public void updateCategoryToReady(Long orderId,Long categoryId) {
 
-    order.markAsReady(); // PREPARING -> READY
+    List<OrderItem> items = orderItemRepository.findByOrderOrderIdAndCategoryId(orderId, categoryId);
+    if (items.isEmpty()) {
+      throw new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND);
+    }
 
-    // 변경된 상태가 반영된 Order를 다시 DTO로 변환
-    return OrderResponse.builder()
-        .orderId(order.getOrderId())
-        .totalPrice(order.getTotalPrice())
-        .status(order.getStatus())
-        .orderDate(order.getCreatedAt())
-        .orderItems(order.getOrderItems().stream()
-            .map(OrderItemDto::new)
-            .toList())
-        .build();
+    items.forEach(OrderItem::markAsReady); //PREPARING -> READY
   }
 
-  public OrderResponse updateToCompleted(Long orderId) {
-    Order order = orderRepository.findById(orderId)
-        .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+  public void updateCategoryToComplete(Long orderId,Long categoryId) {
+    List<OrderItem> items = orderItemRepository.findByOrderOrderIdAndCategoryId(orderId, categoryId);
 
-    order.markAsCompleted(); // READY -> COMPLETED
+    if (items.isEmpty()) {
+      throw new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND);
+    }
 
-    return OrderResponse.builder()
-        .orderId(order.getOrderId())
-        .totalPrice(order.getTotalPrice())
-        .status(order.getStatus())
-        .orderDate(order.getCreatedAt())
-        .orderItems(order.getOrderItems().stream()
-            .map(OrderItemDto::new)
-            .toList())
-        .build();
+    items.forEach(OrderItem::markAsCompleted);
   }
 
   public List<OrderResponse> getMyOrders() {
     Long userId = SecurityUtil.getCurrentUserId();
+
+    User user = userRepository.findById(userId).
+        orElseThrow(() -> {
+          log.error("getMyOrders userId : {}를 db에서 발견하지못했음", userId);
+          return new CustomException(ErrorCode.USER_NOT_FOUND);
+        });
+
     return orderRepository.findByUserUserIdOrderByCreatedAtDesc(userId).stream()
         .map(OrderResponse::from)
         .toList();
+  }
+
+  public List<OrderResponse> getOrdersByUserId(Long userId) {
+
+    User user =  userRepository.findById(userId)
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    return orderRepository.findByUserUserIdOrderByCreatedAtDesc(userId).stream()
+        .map(OrderResponse::from)
+        .toList();
+
   }
 
 }

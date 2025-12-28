@@ -38,19 +38,15 @@ public class Order extends BaseTimeEntity {
   @JoinColumn(name = "user_id")
   private User user;
 
-  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
   private List<OrderItem> orderItems = new ArrayList<>();
 
   private int totalPrice;
-
-  @Enumerated(EnumType.STRING)
-  private OrderStatus status; //
 
 
   public static Order createOrder(User user, List<OrderItem> orderItems) {
     Order order = new Order();
     order.setUser(user);
-    order.setStatus(OrderStatus.PREPARING);
     for (OrderItem orderItem : orderItems) {
       order.addOrderItem(orderItem);
     }
@@ -63,18 +59,4 @@ public class Order extends BaseTimeEntity {
     orderItem.setOrder(this);
   }
 
-  public void markAsReady() {
-    if (this.status != OrderStatus.PREPARING) {
-      throw new CustomException(ErrorCode.INVALID_ORDER_STATUS);
-    }
-    this.status = OrderStatus.READY;
-  }
-
-  // 수령 대기 -> 주문 완료
-  public void markAsCompleted() {
-    if (this.status != OrderStatus.READY) {
-      throw new CustomException(ErrorCode.INVALID_ORDER_STATUS);
-    }
-    this.status = OrderStatus.COMPLETED;
-  }
 }

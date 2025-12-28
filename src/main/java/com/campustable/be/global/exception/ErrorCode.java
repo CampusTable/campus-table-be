@@ -45,6 +45,8 @@ public enum ErrorCode {
 
   INVALID_MENU_AVAILABILITY(HttpStatus.BAD_REQUEST, "메뉴 판매 여부를 입력해주세요"),
 
+  MENU_OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "메뉴의 재고가 부족합니다."),
+
   // Cafeteria
 
   CAFETERIA_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 식당 정보를 찾을 수 없습니다."),
@@ -73,7 +75,10 @@ public enum ErrorCode {
 
   //Order
   INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "올바르지 않은 주문 상태 변경입니다."),
-  ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문을 찾을 수 없습니다.");
+  ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문을 찾을 수 없습니다."),
+
+  //OrderItem
+  ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문메뉴를 찾을 수 없습니다.");
 
   private final HttpStatus status;
   private final String message;
