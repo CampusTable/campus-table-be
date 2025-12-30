@@ -2,6 +2,7 @@ package com.campustable.be.global.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Http;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -44,6 +45,8 @@ public enum ErrorCode {
 
   INVALID_MENU_AVAILABILITY(HttpStatus.BAD_REQUEST, "메뉴 판매 여부를 입력해주세요"),
 
+  MENU_OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "메뉴의 재고가 부족합니다."),
+
   // Cafeteria
 
   CAFETERIA_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 식당 정보를 찾을 수 없습니다."),
@@ -68,9 +71,14 @@ public enum ErrorCode {
   //Cart
   CART_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니를 찾을수 없습니다."),
 
-  CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니 개별목록을 찾을수 없습니다.");
+  CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니 개별목록을 찾을수 없습니다."),
 
+  //Order
+  INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "올바르지 않은 주문 상태 변경입니다."),
+  ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문을 찾을 수 없습니다."),
 
+  //OrderItem
+  ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문메뉴를 찾을 수 없습니다.");
 
   private final HttpStatus status;
   private final String message;

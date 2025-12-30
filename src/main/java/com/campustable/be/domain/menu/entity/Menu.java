@@ -2,6 +2,8 @@ package com.campustable.be.domain.menu.entity;
 
 import com.campustable.be.domain.category.entity.Category;
 import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
+import com.campustable.be.global.exception.CustomException;
+import com.campustable.be.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -82,6 +84,16 @@ public class Menu {
     if (request.getStockQuantity() != null) {
       this.stockQuantity = request.getStockQuantity();
     }
+  }
+
+  public void decreaseStockQuantity(int quantity) {
+    if(this.stockQuantity - quantity < 0) {
+      throw new CustomException(ErrorCode.MENU_OUT_OF_STOCK);
+    }
+    else if(this.stockQuantity - quantity == 0) {
+      this.available = false;
+    }
+    this.stockQuantity -= quantity;
   }
 
 }
