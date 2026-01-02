@@ -156,9 +156,14 @@ public class CartService {
           .mapToInt(item->item.getPrice() * item.getQuantity())
           .sum();
 
+      int totalQuantity = cartItems.stream()
+        .mapToInt(CartItemDto::getQuantity)
+        .sum();
+
       return CartResponse.builder().
           items(cartItems)
           .totalPrice(totalPrice)
+          .totalQuantity(totalQuantity)
           .cartId(cart.get().getCartId())
           .build();
     }
