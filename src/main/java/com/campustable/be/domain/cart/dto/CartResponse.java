@@ -10,6 +10,7 @@ import lombok.Setter;
 @Builder
 public class CartResponse {
   private List<CartItemDto> items;
+  private int totalQuantity;
   private int totalPrice;
   private Long cartId;
 }
