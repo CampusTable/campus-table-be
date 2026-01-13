@@ -3,6 +3,7 @@ package com.campustable.be.domain.order.service;
 import com.campustable.be.domain.cart.entity.Cart;
 import com.campustable.be.domain.cart.repository.CartRepository;
 import com.campustable.be.domain.menu.entity.Menu;
+import com.campustable.be.domain.menu.repository.MenuRepository;
 import com.campustable.be.domain.order.dto.OrderResponse;
 import com.campustable.be.domain.order.entity.Order;
 import com.campustable.be.domain.order.entity.OrderItem;
@@ -16,6 +17,8 @@ import com.campustable.be.global.exception.ErrorCode;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +32,7 @@ public class OrderService {
   private final CartRepository cartRepository;
   private final UserRepository userRepository;
   private final OrderItemRepository orderItemRepository;
+  private final StringRedisTemplate stringRedisTemplate;
 
   public OrderResponse createOrder() {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -62,6 +66,12 @@ public class OrderService {
     orderRepository.save(order);
     user.setCart(null);
     cartRepository.delete(cart);
+
+    // 주문된 메뉴 랭킹 점수 증가
+    for(OrderItem orderItem : orderItems) {
+      stringRedisTemplate.opsForZSet()
+          .incrementScore("menu:rank",String.valueOf(orderItem.getMenu().getId()),orderItem.getQuantity());
+    }
 
     return OrderResponse.from(order);
   }
