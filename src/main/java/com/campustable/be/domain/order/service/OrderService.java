@@ -77,7 +77,7 @@ public class OrderService {
       Cafeteria cafeteria = category.getCafeteria();
       Long cafeteriaId = cafeteria.getCafeteriaId();
 
-      String key = "cafeteria:" + cafeteriaId + "menu:rank";
+      String key = "cafeteria:" + cafeteriaId + ":menu:rank";
 
       stringRedisTemplate.opsForZSet()
           .incrementScore(key,String.valueOf(menu.getId()),orderItem.getQuantity());

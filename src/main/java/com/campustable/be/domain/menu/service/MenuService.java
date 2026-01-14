@@ -155,7 +155,7 @@ public class MenuService {
   @Transactional
   public List<TopMenuResponse> getTopMenusByCafeteriaId(Long cafeteriaId) {
 
-    String key = "cafeteria:"+cafeteriaId+"menu:rank";
+    String key = "cafeteria:"+cafeteriaId+":menu:rank";
 
     Set<String> topMenus = stringRedisTemplate.opsForZSet().reverseRange(key,0,2);
 
