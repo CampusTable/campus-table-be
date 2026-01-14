@@ -153,7 +153,9 @@ public class MenuService {
 
 
   @Transactional
-  public List<TopMenuResponse> getTopMenusByCafeteriaId(Long cafeteriaId) {
+  public List<TopMenuResponse> getTop3MenusByCafeteriaId(Long cafeteriaId) {
+
+     cafeteriaService.findCafeteriaById(cafeteriaId);
 
     String key = "cafeteria:"+cafeteriaId+":menu:rank";
 
