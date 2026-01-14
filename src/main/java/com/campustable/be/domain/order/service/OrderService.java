@@ -1,7 +1,9 @@
 package com.campustable.be.domain.order.service;
 
+import com.campustable.be.domain.cafeteria.entity.Cafeteria;
 import com.campustable.be.domain.cart.entity.Cart;
 import com.campustable.be.domain.cart.repository.CartRepository;
+import com.campustable.be.domain.category.entity.Category;
 import com.campustable.be.domain.menu.entity.Menu;
 import com.campustable.be.domain.menu.repository.MenuRepository;
 import com.campustable.be.domain.order.dto.OrderResponse;
@@ -69,8 +71,16 @@ public class OrderService {
 
     // 주문된 메뉴 랭킹 점수 증가
     for(OrderItem orderItem : orderItems) {
+
+      Menu menu = orderItem.getMenu();
+      Category category = menu.getCategory();
+      Cafeteria cafeteria = category.getCafeteria();
+      Long cafeteriaId = cafeteria.getCafeteriaId();
+
+      String key = "cafeteria:" + cafeteriaId + "menu:rank";
+
       stringRedisTemplate.opsForZSet()
-          .incrementScore("menu:rank",String.valueOf(orderItem.getMenu().getId()),orderItem.getQuantity());
+          .incrementScore(key,String.valueOf(menu.getId()),orderItem.getQuantity());
     }
 
     return OrderResponse.from(order);

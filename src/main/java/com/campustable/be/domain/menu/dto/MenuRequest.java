@@ -43,6 +43,7 @@ public class MenuRequest {
         .menuUrl(this.getMenuUrl())
         .available(this.getAvailable())
         .stockQuantity(this.getStockQuantity())
+
         .build();
   }
 

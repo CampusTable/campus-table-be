@@ -94,11 +94,11 @@ public class MenuController implements MenuControllerDocs {
     return ResponseEntity.noContent().build();
   }
 
-  @GetMapping("/top")
+  @GetMapping("/cafeteria/{cafeteria-id}/top-menus")
   @LogMonitoringInvocation
-  public ResponseEntity<List<TopMenuResponse>> getTopMenus() {
+  public ResponseEntity<List<TopMenuResponse>> getTopMenus(@PathVariable(name = "cafeteria-id") Long cafeteriaId) {
 
-    List<TopMenuResponse> topMenus = menuService.getTopMenus();
+    List<TopMenuResponse> topMenus = menuService.getTopMenusByCafeteriaId(cafeteriaId);
 
     return ResponseEntity.ok(topMenus);
   }

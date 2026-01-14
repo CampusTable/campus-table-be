@@ -153,9 +153,11 @@ public class MenuService {
 
 
   @Transactional
-  public List<TopMenuResponse> getTopMenus(){
+  public List<TopMenuResponse> getTopMenusByCafeteriaId(Long cafeteriaId) {
 
-    Set<String> topMenus = stringRedisTemplate.opsForZSet().reverseRange("menu:rank",0,2);
+    String key = "cafeteria:"+cafeteriaId+"menu:rank";
+
+    Set<String> topMenus = stringRedisTemplate.opsForZSet().reverseRange(key,0,2);
 
     if(topMenus == null || topMenus.isEmpty()){
       return List.of();
@@ -172,7 +174,7 @@ public class MenuService {
 
     List<TopMenuResponse> topMenusResponse = new ArrayList<>();
 
-    for(int i=0;i<3;i++){
+    for(int i=0;i<topMenuIds.size();i++){
       Long topMenuId = topMenuIds.get(i);
       Menu menu = topMenusMap.get(topMenuId);
 
