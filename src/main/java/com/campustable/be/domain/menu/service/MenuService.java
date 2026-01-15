@@ -60,7 +60,15 @@ public class MenuService {
     }
 
     Menu menu = request.toEntity(category);
-    return MenuResponse.from(menuRepository.save(menu));
+
+    Menu savedMenu = menuRepository.save(menu);
+
+    Long cafeteriaId = savedMenu.getCategory().getCafeteria().getCafeteriaId();
+    String key = "cafeteria:" + cafeteriaId + ":menu:rank";
+
+    stringRedisTemplate.opsForZSet().add(key, String.valueOf(savedMenu.getId()), 0.0);
+
+    return MenuResponse.from(savedMenu);
 
   }
 
@@ -68,7 +76,7 @@ public class MenuService {
   public MenuResponse getMenuById(Long menuId) {
 
     Menu menu = menuRepository.findById(menuId)
-        .orElseThrow(()->{
+        .orElseThrow(() -> {
           log.error("getMenuById : 유효하지않은 menuId");
           return new CustomException(ErrorCode.MENU_NOT_FOUND);
         });
@@ -155,13 +163,13 @@ public class MenuService {
   @Transactional
   public List<TopMenuResponse> getTop3MenusByCafeteriaId(Long cafeteriaId) {
 
-     cafeteriaService.findCafeteriaById(cafeteriaId);
+    cafeteriaService.findCafeteriaById(cafeteriaId);
 
-    String key = "cafeteria:"+cafeteriaId+":menu:rank";
+    String key = "cafeteria:" + cafeteriaId + ":menu:rank";
 
-    Set<String> topMenus = stringRedisTemplate.opsForZSet().reverseRange(key,0,2);
+    Set<String> topMenus = stringRedisTemplate.opsForZSet().reverseRange(key, 0, 2);
 
-    if(topMenus == null || topMenus.isEmpty()){
+    if (topMenus == null || topMenus.isEmpty()) {
       return List.of();
     }
 
@@ -171,17 +179,17 @@ public class MenuService {
 
     List<Menu> menus = menuRepository.findAllById(topMenuIds);
 
-    Map<Long,Menu> topMenusMap = menus.stream()
+    Map<Long, Menu> topMenusMap = menus.stream()
         .collect(Collectors.toMap(Menu::getId, Function.identity()));
 
     List<TopMenuResponse> topMenusResponse = new ArrayList<>();
 
-    for(int i=0;i<topMenuIds.size();i++){
+    for (int i = 0; i < topMenuIds.size(); i++) {
       Long topMenuId = topMenuIds.get(i);
       Menu menu = topMenusMap.get(topMenuId);
 
-      if(menu != null){
-        topMenusResponse.add(TopMenuResponse.of((long)(i+1),menu));
+      if (menu != null) {
+        topMenusResponse.add(TopMenuResponse.of((long) (i + 1), menu));
       }
     }
 
