@@ -38,6 +38,10 @@ public class CartService {
     Menu menu = menuRepository.findById(menuId)
         .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
 
+    if(menu.getStockQuantity() < quantity){
+      throw new CustomException(ErrorCode.MENU_OUT_OF_STOCK);
+    }
+
     User user = userRepository.findById(userId).
         orElseThrow(() -> {
           log.error("addOrIncreaseCartItem userId : {}를 db에서 발견하지못했음",userId);
