@@ -42,6 +42,10 @@ public class CartService {
       throw new CustomException(ErrorCode.MENU_OUT_OF_STOCK);
     }
 
+    if(quantity > 9){
+      throw new CustomException(ErrorCode.CART_ITEM_QUANTITY_LIMIT_EXCEEDED);
+    }
+
     User user = userRepository.findById(userId).
         orElseThrow(() -> {
           log.error("addOrIncreaseCartItem userId : {}를 db에서 발견하지못했음",userId);
