@@ -24,6 +24,7 @@ public class MenuResponse {
   private Boolean available;
   private Integer stockQuantity;
   private LocalDateTime createdDate;
+  private Long cafeteriaId;
 
   public static MenuResponse from(Menu menu) {
     return new MenuResponse(
@@ -34,7 +35,8 @@ public class MenuResponse {
         menu.getMenuUrl(),
         menu.getAvailable(),
         menu.getStockQuantity(),
-        menu.getCreatedAt()
+        menu.getCreatedAt(),
+        menu.getCategory().getCafeteria().getCafeteriaId()
     );
   }
 
