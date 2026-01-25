@@ -63,15 +63,14 @@ public class MenuService {
 
     Menu savedMenu = menuRepository.save(menu);
 
-    try{
+    try {
       Long cafeteriaId = savedMenu.getCategory().getCafeteria().getCafeteriaId();
       String key = "cafeteria:" + cafeteriaId + ":menu:rank";
 
       stringRedisTemplate.opsForZSet().add(key, String.valueOf(savedMenu.getId()), 0.0);
-    }
-    catch (Exception e){
+    } catch (Exception e) {
 
-      log.error("메뉴 생성 후 Redis 랭킹 등록 실패. (Menu Id: {}), 원인 :{}",savedMenu.getId(),e.getMessage());
+      log.error("메뉴 생성 후 Redis 랭킹 등록 실패. (Menu Id: {}), 원인 :{}", savedMenu.getId(), e.getMessage());
 
     }
 
@@ -181,7 +180,15 @@ public class MenuService {
     }
 
     List<Long> topMenuIds = topMenus.stream()
-        .map(Long::parseLong)
+        .map(id -> {
+          try {
+            return Long.parseLong(id);
+          } catch (NumberFormatException e) {
+            log.warn("Redis에 잘못된 메뉴 ID 형식: {}", id);
+            return null;
+          }
+        })
+        .filter(Objects::nonNull)
         .toList();
 
     List<Menu> menus = menuRepository.findAllById(topMenuIds);
