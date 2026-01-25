@@ -48,6 +48,9 @@ dependencies {
 
     // JavaNetCookieJar
     implementation 'com.squareup.okhttp3:okhttp-urlconnection:4.9.3'
+
+    // S3
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.0'
 }
 
 tasks.named('test') {
