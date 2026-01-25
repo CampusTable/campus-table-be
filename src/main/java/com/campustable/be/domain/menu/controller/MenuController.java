@@ -8,10 +8,12 @@ import com.campustable.be.global.aop.LogMonitoringInvocation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/menu")
@@ -68,6 +70,18 @@ public class MenuController implements MenuControllerDocs {
         MenuResponse createMenu = menuService.createMenu(createRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createMenu);
+    }
+
+    @PostMapping(value = "/{menu_id}/image" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @LogMonitoringInvocation
+    public ResponseEntity<MenuResponse> uploadMenuImage(
+        @PathVariable(name = "menu_id") Long menuId,
+        @RequestParam("image") MultipartFile image){
+
+      MenuResponse response = menuService.uploadMenuImage(menuId, image);
+
+      return ResponseEntity.ok(response);
+
     }
 
     @Override

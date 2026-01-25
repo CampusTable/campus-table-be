@@ -10,6 +10,7 @@ import com.campustable.be.domain.menu.dto.MenuResponse;
 import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
 import com.campustable.be.domain.menu.entity.Menu;
 import com.campustable.be.domain.menu.repository.MenuRepository;
+import com.campustable.be.domain.s3.service.S3Service;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Slf4j
@@ -29,6 +31,7 @@ public class MenuService {
   private final MenuRepository menuRepository;
   private final CategoryRepository categoryRepository;
   private final CafeteriaService cafeteriaService;
+  private final S3Service s3Service;
 
 
   @Transactional
@@ -53,6 +56,22 @@ public class MenuService {
     Menu menu = request.toEntity(category);
     return MenuResponse.from(menuRepository.save(menu));
 
+  }
+
+  @Transactional
+  public MenuResponse uploadMenuImage(Long menuId, MultipartFile image) {
+    Menu menu = menuRepository.findById(menuId)
+        .orElseThrow(()-> new CustomException(ErrorCode.MENU_NOT_FOUND));
+
+    if (image == null || image.isEmpty()) {
+      throw new CustomException(ErrorCode.INVALID_FILE_REQUEST);
+    }
+
+    String menuUrl = s3Service.uploadFile(image);
+
+    menu.setMenuUrl(menuUrl);
+
+    return MenuResponse.from(menuRepository.save(menu));
   }
 
   @Transactional(readOnly = true)
