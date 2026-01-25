@@ -23,6 +23,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 @RequiredArgsConstructor
@@ -69,21 +71,33 @@ public class OrderService {
     user.setCart(null);
     cartRepository.delete(cart);
 
-    // 주문된 메뉴 랭킹 점수 증가
-    for(OrderItem orderItem : orderItems) {
-
-      Menu menu = orderItem.getMenu();
-      Category category = menu.getCategory();
-      Cafeteria cafeteria = category.getCafeteria();
-      Long cafeteriaId = cafeteria.getCafeteriaId();
-
-      String key = "cafeteria:" + cafeteriaId + ":menu:rank";
-
-      stringRedisTemplate.opsForZSet()
-          .incrementScore(key,String.valueOf(menu.getId()),orderItem.getQuantity());
-    }
+    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+      @Override
+      public void afterCommit() {
+        updateMenuRanking(orderItems);
+      }
+    });
 
     return OrderResponse.from(order);
+  }
+
+  private void updateMenuRanking(List<OrderItem> orderItems) {
+    for(OrderItem orderItem : orderItems) {
+      try {
+        Menu menu = orderItem.getMenu();
+        Category category = menu.getCategory();
+        Cafeteria cafeteria = category.getCafeteria();
+        Long cafeteriaId = cafeteria.getCafeteriaId();
+
+        String key = "cafeteria:" + cafeteriaId + ":menu:rank";
+
+        stringRedisTemplate.opsForZSet()
+            .incrementScore(key, String.valueOf(menu.getId()), orderItem.getQuantity());
+      }
+      catch (Exception e) {
+        log.error("랭킹 점수 반영 실패: {}",e.getMessage());
+      }
+    }
   }
 
   public void updateCategoryToReady(Long orderId,Long categoryId) {

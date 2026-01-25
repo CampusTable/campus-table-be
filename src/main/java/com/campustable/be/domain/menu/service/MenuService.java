@@ -63,10 +63,17 @@ public class MenuService {
 
     Menu savedMenu = menuRepository.save(menu);
 
-    Long cafeteriaId = savedMenu.getCategory().getCafeteria().getCafeteriaId();
-    String key = "cafeteria:" + cafeteriaId + ":menu:rank";
+    try{
+      Long cafeteriaId = savedMenu.getCategory().getCafeteria().getCafeteriaId();
+      String key = "cafeteria:" + cafeteriaId + ":menu:rank";
 
-    stringRedisTemplate.opsForZSet().add(key, String.valueOf(savedMenu.getId()), 0.0);
+      stringRedisTemplate.opsForZSet().add(key, String.valueOf(savedMenu.getId()), 0.0);
+    }
+    catch (Exception e){
+
+      log.error("메뉴 생성 후 Redis 랭킹 등록 실패. (Menu Id: {}), 원인 :{}",savedMenu.getId(),e.getMessage());
+
+    }
 
     return MenuResponse.from(savedMenu);
 
