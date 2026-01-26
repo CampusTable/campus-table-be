@@ -35,7 +35,7 @@ public class MenuService {
 
 
   @Transactional
-  public MenuResponse createMenu(MenuRequest request) {
+  public MenuResponse createMenu(MenuRequest request, MultipartFile image) {
 
     Category category = categoryRepository.findById(request.getCategoryId())
         .orElseThrow(() -> {
@@ -43,18 +43,20 @@ public class MenuService {
           return new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
         });
 
-    Optional<Menu> existingMenu = menuRepository.findByCategoryAndMenuName(
-        category,
-        request.getMenuName()
-    );
-
-    if (existingMenu.isPresent()) {
-      log.error("createMenu: 이미 해당 카테고리에 menu가 존재합니다. 생성이 아닌 수정을 통해 진행해주세요.");
-      throw new CustomException(ErrorCode.MENU_ALREADY_EXISTS);
-    }
+    menuRepository.findByCategoryAndMenuName(category, request.getMenuName())
+        .ifPresent(menu -> {
+          log.error("createMenu: 이미 해당 카테고리에 menu가 존재합니다. 생성이 아닌 수정을 통해 진행해주세요.");
+          throw new CustomException(ErrorCode.MENU_ALREADY_EXISTS);
+        });
 
     Menu menu = request.toEntity(category);
-    return MenuResponse.from(menuRepository.save(menu));
+    Menu savedMenu = menuRepository.save(menu);
+
+    if(image != null && !image.isEmpty()) {
+      uploadMenuImage(savedMenu.getId(), image);
+    }
+
+    return MenuResponse.from(savedMenu);
 
   }
 

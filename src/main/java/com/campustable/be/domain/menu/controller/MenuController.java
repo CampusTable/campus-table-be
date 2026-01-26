@@ -64,14 +64,17 @@ public class MenuController implements MenuControllerDocs {
     }
 
     @Override
-    @PostMapping
+    @PostMapping(consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
     @LogMonitoringInvocation
-    public ResponseEntity<MenuResponse> createMenu(@Valid @RequestBody MenuRequest createRequest){
-        MenuResponse createMenu = menuService.createMenu(createRequest);
+    public ResponseEntity<MenuResponse> createMenu(
+        @Valid @ModelAttribute MenuRequest request
+    ){
+        MenuResponse createMenu = menuService.createMenu(request, request.getImage());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createMenu);
     }
 
+    @Override
     @PostMapping(value = "/{menu_id}/image" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @LogMonitoringInvocation
     public ResponseEntity<MenuResponse> uploadMenuImage(

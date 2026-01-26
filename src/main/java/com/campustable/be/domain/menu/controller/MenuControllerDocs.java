@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 메뉴 관리 시스템의 API 명세를 정의하는 인터페이스입니다.
@@ -77,7 +78,7 @@ public interface MenuControllerDocs {
 
   /**
    * 새로운 메뉴를 시스템에 등록합니다. (관리자 권한 필요)
-   * * @param menuRequest 생성할 메뉴의 상세 정보 DTO
+   * * @param request 생성할 메뉴의 상세 정보 DTO + 이미지 파일
    * @return 생성된 메뉴 정보를 담은 ResponseEntity
    */
   @Operation(summary = "신규 메뉴 생성 (관리자 전용)", description = "새로운 메뉴를 등록합니다.")
@@ -88,7 +89,29 @@ public interface MenuControllerDocs {
       @ApiResponse(responseCode = "409", description = "이미 존재하는 메뉴입니다.",
           content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
   })
-  ResponseEntity<MenuResponse> createMenu(MenuRequest menuRequest);
+  ResponseEntity<MenuResponse> createMenu(
+      @Parameter(description = "메뉴 정보 및 이미지 파일") MenuRequest request
+  );
+
+  /**
+   * 메뉴에 이미지를 업로드 합니다.
+   * * @param menuId 이미지를 등록할 메뉴의 ID
+   * @param image 업로드할 이미지 파일
+   * @return 이미지 업로드가 완료된 메뉴 정보를 담은 ResponseEntity
+   */
+  @Operation(
+      summary = "메뉴 이미지 개별 업로드/수정",
+      description = "메뉴에 사진을 추가합니다."
+  )
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "이미지 업로드 및 경로 업데이트 성공"),
+      @ApiResponse(responseCode = "404", description = "해당 ID의 메뉴를 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+      @ApiResponse(responseCode = "400", description = "유효하지 않은 파일 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+  })
+  ResponseEntity<MenuResponse> uploadMenuImage(
+      @Parameter(description = "대상 메뉴 ID", example = "1") Long menuId,
+      @Parameter(description = "업로드할 이미지 파일") MultipartFile image
+  );
 
   /**
    * 기존 메뉴 정보를 수정합니다. (관리자 권한 필요)

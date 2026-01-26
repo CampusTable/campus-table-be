@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -31,6 +32,8 @@ public class MenuRequest {
   private Boolean available;
 
   private Integer stockQuantity;
+
+  private MultipartFile image;
 
 
   public Menu toEntity(Category category) {
