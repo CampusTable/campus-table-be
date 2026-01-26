@@ -67,7 +67,11 @@ public class MenuService {
       throw new CustomException(ErrorCode.INVALID_FILE_REQUEST);
     }
 
-    String menuUrl = s3Service.uploadFile(image);
+    String cafeteriaName =  menu.getCategory().getCafeteria().getName();
+
+    String dirName = "menu/"+cafeteriaName;
+
+    String menuUrl = s3Service.uploadFile(image, dirName);
 
     menu.setMenuUrl(menuUrl);
 

@@ -63,11 +63,11 @@ public class S3Service {
     return originalFilename;
   }
 
-  public String uploadFile(MultipartFile file) {
+  public String uploadFile(MultipartFile file, String dirName) {
 
     String originalFilename = validateAndExtractFilename(file);
 
-    String storedPath = UUID.randomUUID() + "_" + originalFilename;
+    String storedPath = dirName + "/" + UUID.randomUUID() + "_" + originalFilename;
     log.debug("생성된 파일명: {}", storedPath);
 
     try (InputStream inputStream = file.getInputStream()) {
