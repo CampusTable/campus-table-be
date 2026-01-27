@@ -1,6 +1,7 @@
 package com.campustable.be.domain.s3.service;
 
 import com.campustable.be.domain.s3.util.FileUtil;
+import com.campustable.be.global.common.CommonUtil;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import io.awspring.cloud.s3.S3Exception;
@@ -43,20 +44,7 @@ public class S3Service {
     // 원본 파일 명 검증
     String originalFilename = file.getOriginalFilename();
 
-    // CommonUtil nvl 메소드
-    String nvl;
-
-    if (originalFilename == null) {
-      nvl = "";
-    } else if (originalFilename.equals("")) {
-      nvl = "";
-    } else if (originalFilename.isBlank()) {
-      nvl = "";
-    } else {
-      nvl = originalFilename;
-    }
-
-    if (nvl.isEmpty()) {
+    if (CommonUtil.nvl(originalFilename, "").isEmpty()) {
       log.error("원본 파일명이 비어있거나 존재하지 않습니다.");
       throw new CustomException(ErrorCode.INVALID_FILE_REQUEST);
     }
@@ -88,5 +76,42 @@ public class S3Service {
     }
 
   }
+
+  public void deleteFile(String storedPath) {
+    if (CommonUtil.nvl(storedPath, "").isEmpty()) {
+      log.warn("요청된 파일 경로가 없습니다.");
+      return;
+    }
+
+    try {
+
+      String key = extractKeyFromUrl(storedPath);
+
+      s3Template.deleteObject(bucket, key);
+      log.info("S3 파일 삭제 성공: {}", storedPath);
+
+    } catch (S3Exception e) {
+      log.error("S3Exception - S3 파일 삭제 실패. 버킷: {}, 파일명: {}, 에러: {}", bucket, storedPath, e.getMessage());
+      throw new CustomException(ErrorCode.S3_DELETE_AMAZON_SERVICE_ERROR);
+    } catch (RuntimeException e) {
+      // 기존 AmazonClientException 역할 (네트워크 등 클라이언트 에러)
+      log.error("RuntimeException - S3 파일 삭제 실패. 버킷: {}, 파일명: {}, 에러: {}", bucket, storedPath, e.getMessage());
+      throw new CustomException(ErrorCode.S3_DELETE_AMAZON_CLIENT_ERROR);
+    } catch (Exception e) {
+      log.error("S3 파일 삭제 실패. 버킷: {}, 파일명: {}, 에러: {}", bucket, storedPath, e.getMessage());
+      throw new CustomException(ErrorCode.S3_DELETE_ERROR);
+
+    }
+  }
+
+  private String extractKeyFromUrl(String fileUrl) {
+    if (fileUrl.contains(".com/")) {
+      String key = fileUrl.substring(fileUrl.lastIndexOf(".com/") + 5);
+      log.info("추출된 S3 Key: [{}]", key);
+      return key;
+    }
+    return fileUrl;
+  }
+
 
 }

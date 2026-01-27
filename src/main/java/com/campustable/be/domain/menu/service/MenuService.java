@@ -52,7 +52,7 @@ public class MenuService {
     Menu menu = request.toEntity(category);
     Menu savedMenu = menuRepository.save(menu);
 
-    if(image != null && !image.isEmpty()) {
+    if (image != null && !image.isEmpty()) {
       uploadMenuImage(savedMenu.getId(), image);
     }
 
@@ -63,15 +63,19 @@ public class MenuService {
   @Transactional
   public MenuResponse uploadMenuImage(Long menuId, MultipartFile image) {
     Menu menu = menuRepository.findById(menuId)
-        .orElseThrow(()-> new CustomException(ErrorCode.MENU_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
 
     if (image == null || image.isEmpty()) {
       throw new CustomException(ErrorCode.INVALID_FILE_REQUEST);
     }
 
-    String cafeteriaName =  menu.getCategory().getCafeteria().getName();
+    if (menu.getMenuUrl() != null && !menu.getMenuUrl().isBlank()) {
+      s3Service.deleteFile(menu.getMenuUrl());
+    }
 
-    String dirName = "menu/"+cafeteriaName;
+    String cafeteriaName = menu.getCategory().getCafeteria().getName();
+
+    String dirName = "menu/" + cafeteriaName;
 
     String menuUrl = s3Service.uploadFile(image, dirName);
 
@@ -84,7 +88,7 @@ public class MenuService {
   public MenuResponse getMenuById(Long menuId) {
 
     Menu menu = menuRepository.findById(menuId)
-        .orElseThrow(()->{
+        .orElseThrow(() -> {
           log.error("getMenuById : 유효하지않은 menuId");
           return new CustomException(ErrorCode.MENU_NOT_FOUND);
         });
@@ -162,10 +166,12 @@ public class MenuService {
     if (menu.isEmpty()) {
       log.error("menuId not found {}", menuId);
       throw new CustomException(ErrorCode.MENU_NOT_FOUND);
-    } else {
-      menuRepository.delete(menu.get());
     }
+    if(menu.get().getMenuUrl() != null && !menu.get().getMenuUrl().isBlank()) {
+    s3Service.deleteFile(menu.get().getMenuUrl());
+    }
+    menuRepository.deleteById(menuId);
   }
 
-}
+  }
 
