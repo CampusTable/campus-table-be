@@ -25,7 +25,6 @@ public interface MenuControllerDocs {
 
   /**
    * 시스템에 등록된 모든 메뉴 목록을 조회합니다.
-   * * @return 메뉴 정보 리스트를 담은 ResponseEntity
    */
   @Operation(summary = "메뉴 전체 조회", description = "모든 메뉴 목록을 조회합니다.")
   @ApiResponse(responseCode = "200", description = "조회 성공")
@@ -33,8 +32,6 @@ public interface MenuControllerDocs {
 
   /**
    * 고유 식별자를 통해 단일 메뉴의 상세 정보를 조회합니다.
-   * * @param menuId 조회하고자 하는 메뉴의 ID
-   * @return 해당 메뉴의 상세 정보를 담은 ResponseEntity
    */
   @Operation(summary = "단일 메뉴 상세 조회", description = "특정 ID에 해당하는 메뉴의 상세 정보를 조회합니다.")
   @ApiResponses({
@@ -48,8 +45,6 @@ public interface MenuControllerDocs {
 
   /**
    * 특정 카테고리에 속한 모든 메뉴를 조회합니다.
-   * * @param categoryId 카테고리 고유 식별자
-   * @return 해당 카테고리의 메뉴 리스트를 담은 ResponseEntity
    */
   @Operation(summary = "카테고리별 메뉴 조회", description = "특정 카테고리 ID에 해당하는 메뉴 목록을 조회합니다.")
   @ApiResponses({
@@ -63,8 +58,6 @@ public interface MenuControllerDocs {
 
   /**
    * 특정 식당에서 제공하는 모든 메뉴를 조회합니다.
-   * * @param cafeteriaId 식당 고유 식별자
-   * @return 해당 식당의 메뉴 리스트를 담은 ResponseEntity
    */
   @Operation(summary = "식당별 메뉴 조회", description = "식당 ID에 해당하는 메뉴 목록을 조회합니다.")
   @ApiResponses({
@@ -94,32 +87,31 @@ public interface MenuControllerDocs {
   );
 
   /**
-   * 메뉴에 이미지를 업로드 합니다.
+   * 메뉴에 이미지를 업로드 합니다. (관리자 권한 필요)
    * * @param menuId 이미지를 등록할 메뉴의 ID
    * @param image 업로드할 이미지 파일
    * @return 이미지 업로드가 완료된 메뉴 정보를 담은 ResponseEntity
    */
   @Operation(
-      summary = "메뉴 이미지 개별 업로드/수정",
-      description = "메뉴에 사진을 추가합니다."
+      summary = "메뉴 이미지 개별 업로드/수정 (관리자 전용)",
+      description = "메뉴의 사진을 추가하거나 수정합니다."
   )
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "이미지 업로드 및 경로 업데이트 성공"),
-      @ApiResponse(responseCode = "404", description = "해당 ID의 메뉴를 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-      @ApiResponse(responseCode = "400", description = "유효하지 않은 파일 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+      @ApiResponse(responseCode = "404", description = "해당 ID의 메뉴를 찾을 수 없습니다.",
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+      @ApiResponse(responseCode = "400", description = "유효하지 않은 파일 요청입니다.",
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
   })
   ResponseEntity<MenuResponse> uploadMenuImage(
       @Parameter(description = "대상 메뉴 ID", example = "1") Long menuId,
-      @Parameter(description = "업로드할 이미지 파일") MultipartFile image
+      @Parameter(description = "업로드할 이미지 파일")  MultipartFile image
   );
 
   /**
    * 기존 메뉴 정보를 수정합니다. (관리자 권한 필요)
-   * * @param menuId 수정할 메뉴의 ID
-   * @param menuUpdateRequest 수정할 내용이 담긴 DTO
-   * @return 수정 완료된 메뉴 정보를 담은 ResponseEntity
    */
-  @Operation(summary = "메뉴 정보 수정 (관리자 전용)", description = "특정 ID의 메뉴 정보를 수정합니다.")
+  @Operation(summary = "메뉴 정보 수정 (관리자 전용)", description = "특정 ID의 메뉴 정보를 수정합니다. (이미지 제외)")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "메뉴 수정 성공"),
       @ApiResponse(responseCode = "400", description = "입력값 오류",
@@ -129,13 +121,11 @@ public interface MenuControllerDocs {
   })
   ResponseEntity<MenuResponse> updateMenu(
       @Parameter(description = "수정할 메뉴 ID", example = "1") Long menuId,
-      MenuUpdateRequest menuUpdateRequest
+      @Parameter(description = "수정할 메뉴 정보") MenuUpdateRequest menuUpdateRequest
   );
 
   /**
    * 특정 메뉴를 시스템에서 삭제합니다. (관리자 권한 필요)
-   * * @param menuId 삭제할 메뉴의 ID
-   * @return 삭제 성공 시 빈 바디를 담은 ResponseEntity (204 No Content)
    */
   @Operation(summary = "메뉴 삭제 (관리자 전용)", description = "특정 ID의 메뉴를 삭제합니다.")
   @ApiResponses({

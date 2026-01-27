@@ -16,7 +16,7 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/menu")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class MenuController implements MenuControllerDocs {
 
@@ -25,7 +25,7 @@ public class MenuController implements MenuControllerDocs {
 
 
     @Override
-    @GetMapping
+    @GetMapping("/menus")
     @LogMonitoringInvocation
     public ResponseEntity<List<MenuResponse>> getAllMenus(){
 
@@ -37,7 +37,7 @@ public class MenuController implements MenuControllerDocs {
 
     @Override
     @LogMonitoringInvocation
-    @GetMapping("/category/{category_id}")
+    @GetMapping("/category/{category_id}/menus")
     public ResponseEntity<List<MenuResponse>> getAllMenusByCategoryId(
            @PathVariable(name = "category_id") Long categoryId){
 
@@ -49,14 +49,14 @@ public class MenuController implements MenuControllerDocs {
 
     @Override
     @LogMonitoringInvocation
-    @GetMapping("/{menuId}")
+    @GetMapping("/menus/{menuId}")
     public ResponseEntity<MenuResponse> getMenuById(@PathVariable Long menuId){
       return ResponseEntity.ok(menuService.getMenuById(menuId));
     }
 
     @Override
     @LogMonitoringInvocation
-    @GetMapping("/cafeteria/{cafeteria-id}")
+    @GetMapping("/menus/cafeteria/{cafeteria-id}")
     public ResponseEntity<List<MenuResponse>> getAllMenusByCafeteriaId(
       @PathVariable(name = "cafeteria-id") Long cafeteriaId
     ) {
@@ -64,7 +64,7 @@ public class MenuController implements MenuControllerDocs {
     }
 
     @Override
-    @PostMapping(consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/admin/menus", consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
     @LogMonitoringInvocation
     public ResponseEntity<MenuResponse> createMenu(
         @Valid @ModelAttribute MenuRequest request
@@ -75,7 +75,7 @@ public class MenuController implements MenuControllerDocs {
     }
 
     @Override
-    @PostMapping(value = "/{menu_id}/image" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/admin/menus/{menu_id}/image" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @LogMonitoringInvocation
     public ResponseEntity<MenuResponse> uploadMenuImage(
         @PathVariable(name = "menu_id") Long menuId,
@@ -88,7 +88,7 @@ public class MenuController implements MenuControllerDocs {
     }
 
     @Override
-    @PatchMapping("/{menu_id}")
+    @PatchMapping("/admin/menus/{menu_id}")
     @LogMonitoringInvocation
     public ResponseEntity<MenuResponse> updateMenu(
             @PathVariable(name = "menu_id") Long menuId,
@@ -101,7 +101,7 @@ public class MenuController implements MenuControllerDocs {
 
     @Override
     @LogMonitoringInvocation
-    @DeleteMapping("/{menu_id}")
+    @DeleteMapping("/admin/menus/{menu_id}")
     public ResponseEntity<Void> deleteMenu(
             @PathVariable(name = "menu_id") Long menuId) {
 
