@@ -75,8 +75,6 @@ public enum ErrorCode {
 
   CART_ITEM_QUANTITY_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "장바구니에는 메뉴당 최대 9개까지만 담을 수 있습니다."),
 
-  CART_MIXED_CAFETERIA(HttpStatus.BAD_REQUEST,"다른 식당의 메뉴는 장바구니에 함께 담을 수 없습니다."),
-
   //Order
   INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "올바르지 않은 주문 상태 변경입니다."),
   ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문을 찾을 수 없습니다."),
