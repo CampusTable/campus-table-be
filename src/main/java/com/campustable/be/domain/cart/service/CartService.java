@@ -62,8 +62,13 @@ public class CartService {
         });
 
     if(!cart.getCafeteriaId().equals(cafeteriaId)){
-      log.error("장바구니 식당 불일치 - 장바구니: {}, 메뉴: {}",cart.getCafeteriaId(),cafeteriaId);
-      throw new CustomException(ErrorCode.CART_MIXED_CAFETERIA);
+      if(cart.getCafeteriaId()==null){
+        cart.setCafeteriaId(cafeteriaId);
+      }
+      else if(!cart.getCafeteriaId().equals(cafeteriaId)){
+        log.error("장바구니 식당 불일치 - 장바구니: {}, 메뉴: {}",cart.getCafeteriaId(),cafeteriaId);
+        throw new CustomException(ErrorCode.CART_MIXED_CAFETERIA);
+      }
     }
 
     Optional<CartItem> cartItemOpt = cartItemRepository.findByCartAndMenu(cart, menu);
