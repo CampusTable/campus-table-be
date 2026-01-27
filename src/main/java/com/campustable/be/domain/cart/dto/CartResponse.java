@@ -13,4 +13,5 @@ public class CartResponse {
   private int totalQuantity;
   private int totalPrice;
   private Long cartId;
+  private Long cafeteriaId;
 }
