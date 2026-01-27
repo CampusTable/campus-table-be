@@ -35,8 +35,12 @@ public class Cart {
   @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<CartItem> cartItems = new ArrayList<>();
 
-  public Cart(User user) {
+  @Column(name = "cafeteria_Id")
+  private Long cafeteriaId;
+
+  public Cart(User user,Long cafeteriaId) {
     this.user = user;
+    this.cafeteriaId = cafeteriaId;
   }
 
 
