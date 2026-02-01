@@ -69,19 +69,19 @@ public class MenuService {
       throw new CustomException(ErrorCode.INVALID_FILE_REQUEST);
     }
 
-    if (menu.getMenuUrl() != null && !menu.getMenuUrl().isBlank()) {
-      s3Service.deleteFile(menu.getMenuUrl());
-    }
-
+    String oldUrl = menu.getMenuUrl();
     String cafeteriaName = menu.getCategory().getCafeteria().getName();
-
     String dirName = "menu/" + cafeteriaName;
 
-    String menuUrl = s3Service.uploadFile(image, dirName);
+    String newUrl = s3Service.uploadFile(image, dirName);
+    menu.setMenuUrl(newUrl);
+    Menu savedMenu = menuRepository.save(menu);
 
-    menu.setMenuUrl(menuUrl);
+    if(oldUrl != null && !oldUrl.isBlank()){
+      s3Service.deleteFile(oldUrl);
+    }
 
-    return MenuResponse.from(menuRepository.save(menu));
+    return MenuResponse.from(savedMenu);
   }
 
   @Transactional(readOnly = true)
