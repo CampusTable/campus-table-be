@@ -75,12 +75,22 @@ public class MenuService {
 
     String newUrl = s3Service.uploadFile(image, dirName);
     menu.setMenuUrl(newUrl);
-    Menu savedMenu = menuRepository.save(menu);
+    Menu savedMenu;
+    try {
+      savedMenu = menuRepository.save(menu);
+    } catch (Exception e) {
+      try {
+        s3Service.deleteFile(newUrl);
+      } catch (Exception ex) {
+        log.warn("uploadMenuImage: 신규 이미지 정리 실패. newUrl={}", newUrl, ex);
+      }
+      throw new CustomException(ErrorCode.S3_DELETE_ERROR);
+    }
 
-    if(oldUrl != null && !oldUrl.isBlank()){
+    if (oldUrl != null && !oldUrl.isBlank()) {
       try {
         s3Service.deleteFile(oldUrl);
-      }catch (Exception e){
+      } catch (Exception e) {
         log.warn("uploadMenuImage: 기존 이미지 삭제 실패. oldUrl={}", oldUrl, e);
       }
     }
@@ -171,11 +181,15 @@ public class MenuService {
       log.error("menuId not found {}", menuId);
       throw new CustomException(ErrorCode.MENU_NOT_FOUND);
     }
-    if(menu.get().getMenuUrl() != null && !menu.get().getMenuUrl().isBlank()) {
-    s3Service.deleteFile(menu.get().getMenuUrl());
+    if (menu.get().getMenuUrl() != null && !menu.get().getMenuUrl().isBlank()) {
+      try {
+        s3Service.deleteFile(menu.get().getMenuUrl());
+      } catch (Exception e) {
+        log.warn("deleteMenu: 이미지 삭제 실패. menuId={}, url={}", menuId, menu.get().getMenuUrl(), e);
+      }
     }
     menuRepository.deleteById(menuId);
   }
 
-  }
+}
 
