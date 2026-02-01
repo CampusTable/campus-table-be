@@ -53,7 +53,7 @@ public class MenuService {
     Menu savedMenu = menuRepository.save(menu);
 
     if (image != null && !image.isEmpty()) {
-      uploadMenuImage(savedMenu.getId(), image);
+      return uploadMenuImage(savedMenu.getId(), image);
     }
 
     return MenuResponse.from(savedMenu);
@@ -78,7 +78,11 @@ public class MenuService {
     Menu savedMenu = menuRepository.save(menu);
 
     if(oldUrl != null && !oldUrl.isBlank()){
-      s3Service.deleteFile(oldUrl);
+      try {
+        s3Service.deleteFile(oldUrl);
+      }catch (Exception e){
+        log.warn("uploadMenuImage: 기존 이미지 삭제 실패. oldUrl={}", oldUrl, e);
+      }
     }
 
     return MenuResponse.from(savedMenu);
