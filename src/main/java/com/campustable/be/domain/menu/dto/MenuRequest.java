@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -26,13 +27,13 @@ public class MenuRequest {
   @Min(value = 0, message = "가격은 0원 이상이어야 합니다.")
   private Integer price;
 
-  @NotBlank(message = "이미지를 위한url은 필수입니다.")
-  private String menuUrl;
 
   @NotNull(message = "판매 가능 여부는 필수입니다.")
   private Boolean available;
 
   private Integer stockQuantity;
+
+  private MultipartFile image;
 
 
   public Menu toEntity(Category category) {
@@ -40,7 +41,7 @@ public class MenuRequest {
         .category(category)
         .menuName(this.getMenuName())
         .price(this.getPrice())
-        .menuUrl(this.getMenuUrl())
+        .menuUrl(null)
         .available(this.getAvailable())
         .stockQuantity(this.getStockQuantity())
         .build();
