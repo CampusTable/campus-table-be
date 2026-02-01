@@ -22,14 +22,18 @@ public interface CartControllerDocs {
           - `cartId` (Long): 장바구니 ID
           - `items` (List<CartItemDto>): 장바구니에 담긴 메뉴 목록
           - `totalPrice` (int): 장바구니 전체 금액
+          - `cafeteriaId` (Long): 장바구니에 담긴 식당의 ID 
 
           ### 특징
           - 수량을 0으로 전달하면 해당 메뉴는 삭제됩니다.
+          - 같은 식당의 메뉴만 담을 수 있습니다.
           - **장바구니가 비워지면 장바구니 엔티티가 자동 삭제**됩니다. (이 경우 응답에 `cartId`가 포함되지 않을 수 있습니다.)
 
           ### 예외 처리
           - `MENU_NOT_FOUND` (404): 메뉴 없음
           - `USER_NOT_FOUND` (404): 유저 없음
+          - `CART_MIXED_CAFETERIA` (400): **다른 식당의 메뉴는 함께 담을 수 없음
+          - `CART_ITEM_QUANTITY_LIMIT_EXCEEDED` (400): 수량 제한 초과 (9개)
           """
   )
   ResponseEntity<CartResponse> addOrUpdateItems(
