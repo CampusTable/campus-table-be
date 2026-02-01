@@ -84,7 +84,8 @@ public class MenuService {
       } catch (Exception ex) {
         log.warn("uploadMenuImage: 신규 이미지 정리 실패. newUrl={}", newUrl, ex);
       }
-      throw new CustomException(ErrorCode.S3_DELETE_ERROR);
+      log.error("uploadMenuImage: 메뉴 저장 실패. menuId={}", menuId, e);
+      throw e;
     }
 
     if (oldUrl != null && !oldUrl.isBlank()) {
