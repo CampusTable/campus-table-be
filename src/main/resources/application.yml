@@ -18,6 +18,17 @@ spring:
       date-time: "yyyy-MM-dd'T'HH:mm:ss"
     pathmatch:
       matching-strategy: ant_path_matcher
+  cloud:
+    aws:
+      s3:
+        bucket: "campus-table-s3"
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID}
+        secret-key: ${AWS_SECRET_ACCESS_KEY}
+      region:
+        static: ap-northeast-2
+      stack:
+        auto: false
 
 springdoc:
   servers:
