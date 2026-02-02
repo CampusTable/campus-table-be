@@ -63,16 +63,19 @@ public class S3Service {
       S3Resource resource = s3Template.upload(bucket, storedPath, inputStream);
 
       String s3Url = resource.getURL().toString();
-      log.info("S3 업로드 성공: {}", s3Url);
+      log.debug("S3 업로드 성공: {}", s3Url);
 
       return s3Url;
 
     } catch (S3Exception e) {
-      log.error("AmazonServiceException - S3 파일 업로드 실패. 버킷: {}, 파일명: {}, 에러: {}", bucket, storedPath, e.getMessage());
+      log.error("S3Exception - S3 파일 업로드 실패. 버킷: {}, 파일명: {}, 에러: {}", bucket, storedPath, e.getMessage());
       throw new CustomException(ErrorCode.S3_UPLOAD_AMAZON_CLIENT_ERROR);
     } catch (IOException e) {
       log.error("IOException - 파일 스트림 처리 중 에러 발생. 원본 파일명: {}, 파일명: {} 에러: {}", originalFilename, storedPath, e.getMessage());
       throw new CustomException(ErrorCode.S3_UPLOAD_ERROR);
+    }catch (RuntimeException e){
+      log.error("RuntimeException, 버킷: {}, 파일명: {}, 에러: {}", bucket, storedPath, e.getMessage());
+      throw new CustomException(ErrorCode.S3_UPLOAD_AMAZON_CLIENT_ERROR);
     }
 
   }

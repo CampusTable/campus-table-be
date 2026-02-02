@@ -77,7 +77,7 @@ public class MenuService {
     menu.setMenuUrl(newUrl);
     Menu savedMenu;
     try {
-      savedMenu = menuRepository.save(menu);
+      savedMenu = menuRepository.saveAndFlush(menu);
     } catch (Exception e) {
       try {
         s3Service.deleteFile(newUrl);
