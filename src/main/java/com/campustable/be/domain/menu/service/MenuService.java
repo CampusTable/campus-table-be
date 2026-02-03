@@ -61,11 +61,6 @@ public class MenuService {
     Menu menu = request.toEntity(category);
     Menu savedMenu = menuRepository.save(menu);
 
-
-    Menu menu = request.toEntity(category);
-
-    Menu savedMenu = menuRepository.save(menu);
-
     try {
       Long cafeteriaId = savedMenu.getCategory().getCafeteria().getCafeteriaId();
       String key = "cafeteria:" + cafeteriaId + ":menu:rank";

@@ -36,7 +36,15 @@ public class MenuController implements MenuControllerDocs {
 
   }
 
-    @Override
+  @Override
+  @LogMonitoringInvocation
+  @GetMapping("/menus/{menuId}")
+  public ResponseEntity<MenuResponse> getMenuById(@PathVariable Long menuId){
+    return ResponseEntity.ok(menuService.getMenuById(menuId));
+  }
+
+
+  @Override
     @LogMonitoringInvocation
     @GetMapping("/category/{category_id}/menus")
     public ResponseEntity<List<MenuResponse>> getAllMenusByCategoryId(
@@ -47,7 +55,6 @@ public class MenuController implements MenuControllerDocs {
     return ResponseEntity.ok(menus);
 
   }
-
 
 
   @Override
