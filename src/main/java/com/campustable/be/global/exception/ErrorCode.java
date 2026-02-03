@@ -73,12 +73,30 @@ public enum ErrorCode {
 
   CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니 개별목록을 찾을수 없습니다."),
 
+  CART_ITEM_QUANTITY_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "장바구니에는 메뉴당 최대 9개까지만 담을 수 있습니다."),
+
+  CART_MIXED_CAFETERIA(HttpStatus.BAD_REQUEST,"다른 식당의 메뉴는 장바구니에 함께 담을 수 없습니다."),
+
   //Order
   INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "올바르지 않은 주문 상태 변경입니다."),
+
   ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문을 찾을 수 없습니다."),
 
   //OrderItem
-  ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문메뉴를 찾을 수 없습니다.");
+  ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문메뉴를 찾을 수 없습니다."),
+
+  //S3
+  INVALID_FILE_REQUEST(HttpStatus.BAD_REQUEST, "유효하지 않은 파일 요청입니다."),
+
+  S3_UPLOAD_AMAZON_CLIENT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S3 클라이언트 에러로 인해 파일 업로드에 실패했습니다."),
+
+  S3_UPLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S3 파일 업로드 중 오류 발생"),
+
+  S3_DELETE_AMAZON_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S3 서비스 에러로 인해 파일 삭제에 실패했습니다."),
+
+  S3_DELETE_AMAZON_CLIENT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S3 클라이언트 에러로 인해 파일 삭제에 실패했습니다."),
+
+  S3_DELETE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S3 파일 삭제 중 오류 발생");
 
   private final HttpStatus status;
   private final String message;

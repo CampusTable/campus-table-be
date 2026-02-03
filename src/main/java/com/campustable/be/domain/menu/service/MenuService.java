@@ -11,6 +11,7 @@ import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
 import com.campustable.be.domain.menu.dto.TopMenuResponse;
 import com.campustable.be.domain.menu.entity.Menu;
 import com.campustable.be.domain.menu.repository.MenuRepository;
+import com.campustable.be.domain.s3.service.S3Service;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Slf4j
@@ -38,10 +40,11 @@ public class MenuService {
   private final CategoryRepository categoryRepository;
   private final CafeteriaService cafeteriaService;
   private final StringRedisTemplate stringRedisTemplate;
+  private final S3Service s3Service;
 
 
   @Transactional
-  public MenuResponse createMenu(MenuRequest request) {
+  public MenuResponse createMenu(MenuRequest request, MultipartFile image) {
 
     Category category = categoryRepository.findById(request.getCategoryId())
         .orElseThrow(() -> {
@@ -49,15 +52,15 @@ public class MenuService {
           return new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
         });
 
-    Optional<Menu> existingMenu = menuRepository.findByCategoryAndMenuName(
-        category,
-        request.getMenuName()
-    );
+    menuRepository.findByCategoryAndMenuName(category, request.getMenuName())
+        .ifPresent(menu -> {
+          log.error("createMenu: 이미 해당 카테고리에 menu가 존재합니다. 생성이 아닌 수정을 통해 진행해주세요.");
+          throw new CustomException(ErrorCode.MENU_ALREADY_EXISTS);
+        });
 
-    if (existingMenu.isPresent()) {
-      log.error("createMenu: 이미 해당 카테고리에 menu가 존재합니다. 생성이 아닌 수정을 통해 진행해주세요.");
-      throw new CustomException(ErrorCode.MENU_ALREADY_EXISTS);
-    }
+    Menu menu = request.toEntity(category);
+    Menu savedMenu = menuRepository.save(menu);
+
 
     Menu menu = request.toEntity(category);
 
@@ -73,9 +76,52 @@ public class MenuService {
       log.error("메뉴 생성 후 Redis 랭킹 등록 실패. (Menu Id: {}), 원인 :{}", savedMenu.getId(), e.getMessage());
 
     }
+    
+    if (image != null && !image.isEmpty()) {
+      return uploadMenuImage(savedMenu.getId(), image);
+    }
 
     return MenuResponse.from(savedMenu);
+  }
 
+  @Transactional
+  public MenuResponse uploadMenuImage(Long menuId, MultipartFile image) {
+    Menu menu = menuRepository.findById(menuId)
+        .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
+
+    if (image == null || image.isEmpty()) {
+      throw new CustomException(ErrorCode.INVALID_FILE_REQUEST);
+    }
+
+    String oldUrl = menu.getMenuUrl();
+    String cafeteriaName = menu.getCategory().getCafeteria().getName();
+    String dirName = "menu/" + cafeteriaName;
+
+    String newUrl = s3Service.uploadFile(image, dirName);
+    menu.setMenuUrl(newUrl);
+    Menu savedMenu;
+    try {
+      savedMenu = menuRepository.saveAndFlush(menu);
+    } catch (Exception e) {
+      try {
+        s3Service.deleteFile(newUrl);
+      } catch (Exception ex) {
+        log.warn("uploadMenuImage: 신규 이미지 정리 실패. newUrl={}", newUrl, ex);
+      }
+      log.error("uploadMenuImage: 메뉴 저장 실패. menuId={}", menuId, e);
+      throw e;
+    }
+
+    if (oldUrl != null && !oldUrl.isBlank()) {
+      try {
+        s3Service.deleteFile(oldUrl);
+      } catch (Exception e) {
+        log.warn("uploadMenuImage: 기존 이미지 삭제 실패. oldUrl={}", oldUrl, e);
+      }
+    }
+
+
+    return MenuResponse.from(savedMenu);
   }
 
   @Transactional(readOnly = true)
@@ -160,9 +206,15 @@ public class MenuService {
     if (menu.isEmpty()) {
       log.error("menuId not found {}", menuId);
       throw new CustomException(ErrorCode.MENU_NOT_FOUND);
-    } else {
-      menuRepository.delete(menu.get());
     }
+    if (menu.get().getMenuUrl() != null && !menu.get().getMenuUrl().isBlank()) {
+      try {
+        s3Service.deleteFile(menu.get().getMenuUrl());
+      } catch (Exception e) {
+        log.warn("deleteMenu: 이미지 삭제 실패. menuId={}, url={}", menuId, menu.get().getMenuUrl(), e);
+      }
+    }
+    menuRepository.deleteById(menuId);
   }
 
 

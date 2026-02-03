@@ -9,13 +9,15 @@ import com.campustable.be.global.aop.LogMonitoringInvocation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/menu")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class MenuController implements MenuControllerDocs {
 
@@ -23,10 +25,10 @@ public class MenuController implements MenuControllerDocs {
   private final MenuService menuService;
 
 
-  @Override
-  @GetMapping
-  @LogMonitoringInvocation
-  public ResponseEntity<List<MenuResponse>> getAllMenus() {
+    @Override
+    @GetMapping("/menus")
+    @LogMonitoringInvocation
+    public ResponseEntity<List<MenuResponse>> getAllMenus(){
 
     List<MenuResponse> menus = menuService.getAllMenus();
 
@@ -34,11 +36,11 @@ public class MenuController implements MenuControllerDocs {
 
   }
 
-  @Override
-  @LogMonitoringInvocation
-  @GetMapping("/category/{category_id}")
-  public ResponseEntity<List<MenuResponse>> getAllMenusByCategoryId(
-      @PathVariable(name = "category_id") Long categoryId) {
+    @Override
+    @LogMonitoringInvocation
+    @GetMapping("/category/{category_id}/menus")
+    public ResponseEntity<List<MenuResponse>> getAllMenusByCategoryId(
+           @PathVariable(name = "category_id") Long categoryId){
 
     List<MenuResponse> menus = menuService.getAllMenusByCategory(categoryId);
 
@@ -46,12 +48,7 @@ public class MenuController implements MenuControllerDocs {
 
   }
 
-  @Override
-  @LogMonitoringInvocation
-  @GetMapping("/{menuId}")
-  public ResponseEntity<MenuResponse> getMenuById(@PathVariable Long menuId) {
-    return ResponseEntity.ok(menuService.getMenuById(menuId));
-  }
+
 
   @Override
   @LogMonitoringInvocation
@@ -62,32 +59,47 @@ public class MenuController implements MenuControllerDocs {
     return ResponseEntity.ok(menuService.getAllMenusByCafeteriaId(cafeteriaId));
   }
 
-  @Override
-  @PostMapping
-  @LogMonitoringInvocation
-  public ResponseEntity<MenuResponse> createMenu(@Valid @RequestBody MenuRequest createRequest) {
-    MenuResponse createMenu = menuService.createMenu(createRequest);
+    @Override
+    @PostMapping(value = "/admin/menus", consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
+    @LogMonitoringInvocation
+    public ResponseEntity<MenuResponse> createMenu(
+        @Valid @ModelAttribute MenuRequest request
+    ){
+        MenuResponse createMenu = menuService.createMenu(request, request.getImage());
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createMenu);
   }
 
-  @Override
-  @PatchMapping("/{menu_id}")
-  @LogMonitoringInvocation
-  public ResponseEntity<MenuResponse> updateMenu(
-      @PathVariable(name = "menu_id") Long menuId,
-      @RequestBody MenuUpdateRequest updateRequest) {
+    @Override
+    @PostMapping(value = "/admin/menus/{menu_id}/image" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @LogMonitoringInvocation
+    public ResponseEntity<MenuResponse> uploadMenuImage(
+        @PathVariable(name = "menu_id") Long menuId,
+        @RequestParam("image") MultipartFile image){
+
+      MenuResponse response = menuService.uploadMenuImage(menuId, image);
+
+      return ResponseEntity.ok(response);
+
+    }
+
+    @Override
+    @PatchMapping("/admin/menus/{menu_id}")
+    @LogMonitoringInvocation
+    public ResponseEntity<MenuResponse> updateMenu(
+            @PathVariable(name = "menu_id") Long menuId,
+            @RequestBody MenuUpdateRequest updateRequest){
 
     MenuResponse updateMenu = menuService.updateMenu(menuId, updateRequest);
 
     return ResponseEntity.ok(updateMenu);
   }
 
-  @Override
-  @LogMonitoringInvocation
-  @DeleteMapping("/{menu_id}")
-  public ResponseEntity<Void> deleteMenu(
-      @PathVariable(name = "menu_id") Long menuId) {
+    @Override
+    @LogMonitoringInvocation
+    @DeleteMapping("/admin/menus/{menu_id}")
+    public ResponseEntity<Void> deleteMenu(
+            @PathVariable(name = "menu_id") Long menuId) {
 
     menuService.deleteMenu(menuId);
 

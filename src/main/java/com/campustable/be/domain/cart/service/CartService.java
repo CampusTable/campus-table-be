@@ -38,18 +38,38 @@ public class CartService {
     Menu menu = menuRepository.findById(menuId)
         .orElseThrow(() -> new CustomException(ErrorCode.MENU_NOT_FOUND));
 
+    if(menu.getStockQuantity() < quantity){
+      throw new CustomException(ErrorCode.MENU_OUT_OF_STOCK);
+    }
+
+    if(quantity > 9){
+      throw new CustomException(ErrorCode.CART_ITEM_QUANTITY_LIMIT_EXCEEDED);
+    }
+
     User user = userRepository.findById(userId).
         orElseThrow(() -> {
           log.error("addOrIncreaseCartItem userId : {}를 db에서 발견하지못했음",userId);
           return new CustomException(ErrorCode.USER_NOT_FOUND);
         });
 
+    Long cafeteriaId = menu.getCategory().getCafeteria().getCafeteriaId();
+
     Cart cart = cartRepository.findByUser(user)
         .orElseGet(() -> {
-          log.info("사용자의 장바구니가 없어 새로 생성합니다. userId: {}", userId);
+          log.info("사용자의 장바구니가 없어 새로 생성합니다. userId: {}, cafeteriaId: {}", userId, cafeteriaId);
 
-          return cartRepository.save(new Cart(user));
+          return cartRepository.save(new Cart(user,cafeteriaId));
         });
+
+    if(!cart.getCafeteriaId().equals(cafeteriaId)){
+      if(cart.getCafeteriaId()==null){
+        cart.setCafeteriaId(cafeteriaId);
+      }
+      else if(!cart.getCafeteriaId().equals(cafeteriaId)){
+        log.error("장바구니 식당 불일치 - 장바구니: {}, 메뉴: {}",cart.getCafeteriaId(),cafeteriaId);
+        throw new CustomException(ErrorCode.CART_MIXED_CAFETERIA);
+      }
+    }
 
     Optional<CartItem> cartItemOpt = cartItemRepository.findByCartAndMenu(cart, menu);
 
@@ -94,6 +114,7 @@ public class CartService {
         .totalPrice(totalPrice)
         .totalQuantity(totalQuantity)
         .cartId(cart.getCartId())
+        .cafeteriaId(cart.getCafeteriaId())
         .build();
   }
 
@@ -165,6 +186,7 @@ public class CartService {
           .totalPrice(totalPrice)
           .totalQuantity(totalQuantity)
           .cartId(cart.get().getCartId())
+          .cafeteriaId(cart.get().getCafeteriaId())
           .build();
     }
     else{
