@@ -56,7 +56,7 @@ public class MenuController implements MenuControllerDocs {
 
     @Override
     @LogMonitoringInvocation
-    @GetMapping("/menus/cafeteria/{cafeteria-id}")
+    @GetMapping("/menu/cafeteria/{cafeteria-id}")
     public ResponseEntity<List<MenuResponse>> getAllMenusByCafeteriaId(
       @PathVariable(name = "cafeteria-id") Long cafeteriaId
     ) {
