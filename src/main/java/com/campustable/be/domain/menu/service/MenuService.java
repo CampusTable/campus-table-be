@@ -8,13 +8,21 @@ import com.campustable.be.domain.category.repository.CategoryRepository;
 import com.campustable.be.domain.menu.dto.MenuRequest;
 import com.campustable.be.domain.menu.dto.MenuResponse;
 import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
+import com.campustable.be.domain.menu.dto.TopMenuResponse;
 import com.campustable.be.domain.menu.entity.Menu;
 import com.campustable.be.domain.menu.repository.MenuRepository;
 import com.campustable.be.domain.s3.service.S3Service;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +39,7 @@ public class MenuService {
   private final MenuRepository menuRepository;
   private final CategoryRepository categoryRepository;
   private final CafeteriaService cafeteriaService;
+  private final StringRedisTemplate stringRedisTemplate;
   private final S3Service s3Service;
 
 
@@ -52,12 +61,22 @@ public class MenuService {
     Menu menu = request.toEntity(category);
     Menu savedMenu = menuRepository.save(menu);
 
+    try {
+      Long cafeteriaId = savedMenu.getCategory().getCafeteria().getCafeteriaId();
+      String key = "cafeteria:" + cafeteriaId + ":menu:rank";
+
+      stringRedisTemplate.opsForZSet().add(key, String.valueOf(savedMenu.getId()), 0.0);
+    } catch (Exception e) {
+
+      log.error("메뉴 생성 후 Redis 랭킹 등록 실패. (Menu Id: {}), 원인 :{}", savedMenu.getId(), e.getMessage());
+
+    }
+    
     if (image != null && !image.isEmpty()) {
       return uploadMenuImage(savedMenu.getId(), image);
     }
 
     return MenuResponse.from(savedMenu);
-
   }
 
   @Transactional
@@ -95,6 +114,7 @@ public class MenuService {
         log.warn("uploadMenuImage: 기존 이미지 삭제 실패. oldUrl={}", oldUrl, e);
       }
     }
+
 
     return MenuResponse.from(savedMenu);
   }
@@ -190,6 +210,52 @@ public class MenuService {
       }
     }
     menuRepository.deleteById(menuId);
+  }
+
+
+  @Transactional
+  public List<TopMenuResponse> getTop3MenusByCafeteriaId(Long cafeteriaId) {
+
+    cafeteriaService.findCafeteriaById(cafeteriaId);
+
+    String key = "cafeteria:" + cafeteriaId + ":menu:rank";
+
+    Set<String> topMenus = stringRedisTemplate.opsForZSet().reverseRange(key, 0, 2);
+
+    if (topMenus == null || topMenus.isEmpty()) {
+      return List.of();
+    }
+
+    List<Long> topMenuIds = topMenus.stream()
+        .map(id -> {
+          try {
+            return Long.parseLong(id);
+          } catch (NumberFormatException e) {
+            log.warn("Redis에 잘못된 메뉴 ID 형식: {}", id);
+            return null;
+          }
+        })
+        .filter(Objects::nonNull)
+        .toList();
+
+    List<Menu> menus = menuRepository.findAllById(topMenuIds);
+
+    Map<Long, Menu> topMenusMap = menus.stream()
+        .collect(Collectors.toMap(Menu::getId, Function.identity()));
+
+    List<TopMenuResponse> topMenusResponse = new ArrayList<>();
+
+    for (int i = 0; i < topMenuIds.size(); i++) {
+      Long topMenuId = topMenuIds.get(i);
+      Menu menu = topMenusMap.get(topMenuId);
+
+      if (menu != null) {
+        topMenusResponse.add(TopMenuResponse.of((long) (i + 1), menu));
+      }
+    }
+
+    return topMenusResponse;
+
   }
 
 }

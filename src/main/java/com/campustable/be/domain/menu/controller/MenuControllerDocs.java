@@ -3,6 +3,7 @@ package com.campustable.be.domain.menu.controller;
 import com.campustable.be.domain.menu.dto.MenuRequest;
 import com.campustable.be.domain.menu.dto.MenuResponse;
 import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
+import com.campustable.be.domain.menu.dto.TopMenuResponse;
 import com.campustable.be.global.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -136,4 +137,22 @@ public interface MenuControllerDocs {
   ResponseEntity<Void> deleteMenu(
       @Parameter(description = "삭제할 메뉴 ID", example = "1") Long menuId
   );
+
+  /**
+   * 특정 식당의 인기 메뉴(Top 3)를 조회합니다.
+   * Redis ZSet을 기반으로 식당별 주문량이 가장 많은 Top3 메뉴 정보와 랭킹을 반환
+   * @param cafeteriaId 식당 고유 식별자
+   * @return 랭킹과 메뉴 상세 정보 리스트를 담은 ResponseEntity
+   */
+  @Operation(summary = "식당별 인기 메뉴 조회(Top 3)", description = "특정 식당 ID의 Top 3 인기 메뉴를 조회합니다.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "조회 성공"),
+      @ApiResponse(responseCode = "404", description = "해당 식당을 찾을 수 없습니다.",
+      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+  })
+  ResponseEntity<List<TopMenuResponse>> getTop3MenusByCafeteriaId(
+      @Parameter(description = "조회할 식당 ID",example = "1") Long cafeteriaId
+  );
+
+
 }

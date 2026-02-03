@@ -1,8 +1,11 @@
 package com.campustable.be.domain.order.service;
 
+import com.campustable.be.domain.cafeteria.entity.Cafeteria;
 import com.campustable.be.domain.cart.entity.Cart;
 import com.campustable.be.domain.cart.repository.CartRepository;
+import com.campustable.be.domain.category.entity.Category;
 import com.campustable.be.domain.menu.entity.Menu;
+import com.campustable.be.domain.menu.repository.MenuRepository;
 import com.campustable.be.domain.order.dto.OrderResponse;
 import com.campustable.be.domain.order.entity.Order;
 import com.campustable.be.domain.order.entity.OrderItem;
@@ -16,8 +19,12 @@ import com.campustable.be.global.exception.ErrorCode;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +36,7 @@ public class OrderService {
   private final CartRepository cartRepository;
   private final UserRepository userRepository;
   private final OrderItemRepository orderItemRepository;
+  private final StringRedisTemplate stringRedisTemplate;
 
   public OrderResponse createOrder() {
     Long userId = SecurityUtil.getCurrentUserId();
@@ -63,7 +71,33 @@ public class OrderService {
     user.setCart(null);
     cartRepository.delete(cart);
 
+    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+      @Override
+      public void afterCommit() {
+        updateMenuRanking(orderItems);
+      }
+    });
+
     return OrderResponse.from(order);
+  }
+
+  private void updateMenuRanking(List<OrderItem> orderItems) {
+    for(OrderItem orderItem : orderItems) {
+      try {
+        Menu menu = orderItem.getMenu();
+        Category category = menu.getCategory();
+        Cafeteria cafeteria = category.getCafeteria();
+        Long cafeteriaId = cafeteria.getCafeteriaId();
+
+        String key = "cafeteria:" + cafeteriaId + ":menu:rank";
+
+        stringRedisTemplate.opsForZSet()
+            .incrementScore(key, String.valueOf(menu.getId()), orderItem.getQuantity());
+      }
+      catch (Exception e) {
+        log.error("랭킹 점수 반영 실패: {}",e.getMessage());
+      }
+    }
   }
 
   public void updateCategoryToReady(Long orderId,Long categoryId) {

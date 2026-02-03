@@ -44,6 +44,7 @@ public class MenuRequest {
         .menuUrl(null)
         .available(this.getAvailable())
         .stockQuantity(this.getStockQuantity())
+
         .build();
   }
 

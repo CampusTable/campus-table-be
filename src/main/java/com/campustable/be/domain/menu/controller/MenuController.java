@@ -3,6 +3,7 @@ package com.campustable.be.domain.menu.controller;
 import com.campustable.be.domain.menu.dto.MenuRequest;
 import com.campustable.be.domain.menu.dto.MenuResponse;
 import com.campustable.be.domain.menu.dto.MenuUpdateRequest;
+import com.campustable.be.domain.menu.dto.TopMenuResponse;
 import com.campustable.be.domain.menu.service.MenuService;
 import com.campustable.be.global.aop.LogMonitoringInvocation;
 import jakarta.validation.Valid;
@@ -21,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MenuController implements MenuControllerDocs {
 
 
-    private final MenuService menuService;
+  private final MenuService menuService;
 
 
     @Override
@@ -29,39 +30,41 @@ public class MenuController implements MenuControllerDocs {
     @LogMonitoringInvocation
     public ResponseEntity<List<MenuResponse>> getAllMenus(){
 
-        List<MenuResponse> menus = menuService.getAllMenus();
+    List<MenuResponse> menus = menuService.getAllMenus();
 
-        return ResponseEntity.ok(menus);
+    return ResponseEntity.ok(menus);
 
-    }
+  }
 
-    @Override
+  @Override
+  @LogMonitoringInvocation
+  @GetMapping("/menus/{menuId}")
+  public ResponseEntity<MenuResponse> getMenuById(@PathVariable Long menuId){
+    return ResponseEntity.ok(menuService.getMenuById(menuId));
+  }
+
+
+  @Override
     @LogMonitoringInvocation
     @GetMapping("/category/{category_id}/menus")
     public ResponseEntity<List<MenuResponse>> getAllMenusByCategoryId(
            @PathVariable(name = "category_id") Long categoryId){
 
-        List<MenuResponse> menus = menuService.getAllMenusByCategory(categoryId);
+    List<MenuResponse> menus = menuService.getAllMenusByCategory(categoryId);
 
-        return  ResponseEntity.ok(menus);
+    return ResponseEntity.ok(menus);
 
-    }
+  }
 
-    @Override
-    @LogMonitoringInvocation
-    @GetMapping("/menus/{menuId}")
-    public ResponseEntity<MenuResponse> getMenuById(@PathVariable Long menuId){
-      return ResponseEntity.ok(menuService.getMenuById(menuId));
-    }
 
-    @Override
-    @LogMonitoringInvocation
-    @GetMapping("/menus/cafeteria/{cafeteria-id}")
-    public ResponseEntity<List<MenuResponse>> getAllMenusByCafeteriaId(
+  @Override
+  @LogMonitoringInvocation
+  @GetMapping("/cafeteria/{cafeteria-id}")
+  public ResponseEntity<List<MenuResponse>> getAllMenusByCafeteriaId(
       @PathVariable(name = "cafeteria-id") Long cafeteriaId
-    ) {
-      return ResponseEntity.ok(menuService.getAllMenusByCafeteriaId(cafeteriaId));
-    }
+  ) {
+    return ResponseEntity.ok(menuService.getAllMenusByCafeteriaId(cafeteriaId));
+  }
 
     @Override
     @PostMapping(value = "/admin/menus", consumes =  MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -71,8 +74,8 @@ public class MenuController implements MenuControllerDocs {
     ){
         MenuResponse createMenu = menuService.createMenu(request, request.getImage());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(createMenu);
-    }
+    return ResponseEntity.status(HttpStatus.CREATED).body(createMenu);
+  }
 
     @Override
     @PostMapping(value = "/admin/menus/{menu_id}/image" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -94,10 +97,10 @@ public class MenuController implements MenuControllerDocs {
             @PathVariable(name = "menu_id") Long menuId,
             @RequestBody MenuUpdateRequest updateRequest){
 
-        MenuResponse updateMenu = menuService.updateMenu(menuId, updateRequest);
+    MenuResponse updateMenu = menuService.updateMenu(menuId, updateRequest);
 
-        return ResponseEntity.ok(updateMenu);
-    }
+    return ResponseEntity.ok(updateMenu);
+  }
 
     @Override
     @LogMonitoringInvocation
@@ -105,9 +108,19 @@ public class MenuController implements MenuControllerDocs {
     public ResponseEntity<Void> deleteMenu(
             @PathVariable(name = "menu_id") Long menuId) {
 
-        menuService.deleteMenu(menuId);
+    menuService.deleteMenu(menuId);
 
-        return ResponseEntity.noContent().build();
-    }
+    return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  @GetMapping("/cafeteria/{cafeteria-id}/top-menus")
+  @LogMonitoringInvocation
+  public ResponseEntity<List<TopMenuResponse>> getTop3MenusByCafeteriaId(@PathVariable(name = "cafeteria-id") Long cafeteriaId) {
+
+    List<TopMenuResponse> topMenus = menuService.getTop3MenusByCafeteriaId(cafeteriaId);
+
+    return ResponseEntity.ok(topMenus);
+  }
 
 }
