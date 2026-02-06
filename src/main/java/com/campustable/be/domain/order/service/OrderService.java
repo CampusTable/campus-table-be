@@ -39,69 +39,70 @@ public class OrderService {
   private final OrderItemRepository orderItemRepository;
   private final StringRedisTemplate stringRedisTemplate;
 
-//  public OrderResponse createOrder() {
-//    Long userId = SecurityUtil.getCurrentUserId();
-//
-//    User user = userRepository.findById(userId)
-//        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-//
-//    Cart cart = cartRepository.findByUser(user)
-//        .orElseThrow(() -> new CustomException(ErrorCode.CART_NOT_FOUND));
-//
-//    if (cart.getCartItems().isEmpty()) {
-//      throw new CustomException(ErrorCode.CART_NOT_FOUND);
-//    }
-//
-//    List<OrderItem> orderItems = cart.getCartItems().stream()
-//        .map(cartItem -> {
-//
-//          Menu menu = cartItem.getMenu();
-//          menu.decreaseStockQuantity(cartItem.getQuantity());
-//
-//          return OrderItem.createOrderItem(
-//              menu,
-//              menu.getPrice(),
-//              cartItem.getQuantity()
-//          );
-//        })
-//        .toList();
-//
-//    Order order = Order.createOrder(user, orderItems);
-//    orderRepository.save(order);
-//
-//    List<RankingDto> rankingData = orderItems.stream()
-//        .map(item -> new RankingDto(
-//            item.getMenu().getCategory().getCafeteria().getCafeteriaId(),
-//            item.getMenu().getId(),
-//            item.getQuantity()))
-//        .toList();
-//
-//    user.setCart(null);
-//    cartRepository.delete(cart);
-//
-//    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-//      @Override
-//      public void afterCommit() {
-//        updateMenuRanking(rankingData);
-//      }
-//    });
-//
-//    return OrderResponse.from(order);
-//  }
+  public OrderResponse createOrder() {
 
-//  private void updateMenuRanking(List<RankingDto> rankingData) {
-//    for (RankingDto data : rankingData) {
-//      try {
-//
-//        String key = "cafeteria:"+data.cafeteriaId()+":menu:rank";
-//        stringRedisTemplate.opsForZSet()
-//            .incrementScore(key,String.valueOf(data.menuId()),data.quantity());
-//
-//      } catch (Exception e) {
-//        log.error("랭킹 점수 반영 실패: {}", e.getMessage());
-//      }
-//    }
-//  }
+    Long userId = SecurityUtil.getCurrentUserId();
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    Cart cart = cartRepository.findByUser(user)
+        .orElseThrow(() -> new CustomException(ErrorCode.CART_NOT_FOUND));
+
+    if (cart.getCartItems().isEmpty()) {
+      throw new CustomException(ErrorCode.CART_NOT_FOUND);
+    }
+
+    List<OrderItem> orderItems = cart.getCartItems().stream()
+        .map(cartItem -> {
+          Menu menu = cartItem.getMenu();
+          menu.decreaseStockQuantity(cartItem.getQuantity());
+
+          return OrderItem.createOrderItem(
+              menu,
+              menu.getPrice(),
+              cartItem.getQuantity()
+          );
+        })
+        .toList();
+
+    Order order = Order.createOrder(user, orderItems);
+
+    orderRepository.save(order);
+
+    user.setCart(null);
+
+    cartRepository.delete(cart);
+
+    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+      @Override
+      public void afterCommit() {
+        updateMenuRanking(orderItems);
+      }
+    });
+    return OrderResponse.from(order);
+  }
+
+
+  private void updateMenuRanking(List<OrderItem> orderItems) {
+
+    for (OrderItem orderItem : orderItems) {
+      try {
+        Menu menu = orderItem.getMenu();
+        Category category = menu.getCategory();
+        Cafeteria cafeteria = category.getCafeteria();
+        Long cafeteriaId = cafeteria.getCafeteriaId();
+
+        String key = "cafeteria:" + cafeteriaId + ":menu:rank";
+
+        stringRedisTemplate.opsForZSet()
+            .incrementScore(key, String.valueOf(menu.getId()), orderItem.getQuantity());
+
+      } catch (Exception e) {
+        log.error("랭킹 점수 반영 실패: {}", e.getMessage());
+      }
+    }
+  }
 
   public void updateCategoryToReady(Long orderId, Long categoryId) {
 
@@ -147,9 +148,5 @@ public class OrderService {
         .toList();
 
   }
-
-//  private record RankingDto(Long cafeteriaId, Long menuId, int quantity) {
-//
-//  }
 
 }
