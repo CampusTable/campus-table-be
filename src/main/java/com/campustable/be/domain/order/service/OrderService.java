@@ -93,9 +93,9 @@ public class OrderService {
     for (RankingDto data : rankingData) {
       try {
 
-        String key = "cafeteria:"+data.cafeteriaId+":menu:rank";
+        String key = "cafeteria:"+data.cafeteriaId()+":menu:rank";
         stringRedisTemplate.opsForZSet()
-            .incrementScore(key,String.valueOf(data.menuId),data.quantity);
+            .incrementScore(key,String.valueOf(data.menuId()),data.quantity());
 
       } catch (Exception e) {
         log.error("랭킹 점수 반영 실패: {}", e.getMessage());
@@ -148,7 +148,7 @@ public class OrderService {
 
   }
 
-  private record RankingDto(Long cafeteriaId, Long menuId, Integer quantity) {
+  private record RankingDto(Long cafeteriaId, Long menuId, int quantity) {
 
   }
 
