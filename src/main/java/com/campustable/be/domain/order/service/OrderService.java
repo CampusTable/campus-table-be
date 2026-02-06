@@ -17,6 +17,7 @@ import com.campustable.be.global.common.SecurityUtil;
 import com.campustable.be.global.exception.CustomException;
 import com.campustable.be.global.exception.ErrorCode;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -66,41 +67,43 @@ public class OrderService {
         .toList();
 
     Order order = Order.createOrder(user, orderItems);
-
     orderRepository.save(order);
+
+    List<RankingDto> rankingData = orderItems.stream()
+        .map(item -> new RankingDto(
+            item.getMenu().getCategory().getCafeteria().getCafeteriaId(),
+            item.getMenu().getId(),
+            item.getQuantity()))
+        .toList();
+
     user.setCart(null);
     cartRepository.delete(cart);
 
     TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
       @Override
       public void afterCommit() {
-        updateMenuRanking(orderItems);
+        updateMenuRanking(rankingData);
       }
     });
 
     return OrderResponse.from(order);
   }
 
-  private void updateMenuRanking(List<OrderItem> orderItems) {
-    for(OrderItem orderItem : orderItems) {
+  private void updateMenuRanking(List<RankingDto> rankingData) {
+    for (RankingDto data : rankingData) {
       try {
-        Menu menu = orderItem.getMenu();
-        Category category = menu.getCategory();
-        Cafeteria cafeteria = category.getCafeteria();
-        Long cafeteriaId = cafeteria.getCafeteriaId();
 
-        String key = "cafeteria:" + cafeteriaId + ":menu:rank";
-
+        String key = "cafeteria:"+data.cafeteriaId+":menu:rank";
         stringRedisTemplate.opsForZSet()
-            .incrementScore(key, String.valueOf(menu.getId()), orderItem.getQuantity());
-      }
-      catch (Exception e) {
-        log.error("랭킹 점수 반영 실패: {}",e.getMessage());
+            .incrementScore(key,String.valueOf(data.menuId),data.quantity);
+
+      } catch (Exception e) {
+        log.error("랭킹 점수 반영 실패: {}", e.getMessage());
       }
     }
   }
 
-  public void updateCategoryToReady(Long orderId,Long categoryId) {
+  public void updateCategoryToReady(Long orderId, Long categoryId) {
 
     List<OrderItem> items = orderItemRepository.findByOrderOrderIdAndCategoryId(orderId, categoryId);
     if (items.isEmpty()) {
@@ -110,7 +113,7 @@ public class OrderService {
     items.forEach(OrderItem::markAsReady); //PREPARING -> READY
   }
 
-  public void updateCategoryToComplete(Long orderId,Long categoryId) {
+  public void updateCategoryToComplete(Long orderId, Long categoryId) {
     List<OrderItem> items = orderItemRepository.findByOrderOrderIdAndCategoryId(orderId, categoryId);
 
     if (items.isEmpty()) {
@@ -136,12 +139,16 @@ public class OrderService {
 
   public List<OrderResponse> getOrdersByUserId(Long userId) {
 
-    User user =  userRepository.findById(userId)
+    User user = userRepository.findById(userId)
         .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
     return orderRepository.findByUserUserIdOrderByCreatedAtDesc(userId).stream()
         .map(OrderResponse::from)
         .toList();
+
+  }
+
+  private record RankingDto(Long cafeteriaId, Long menuId, Integer quantity) {
 
   }
 
