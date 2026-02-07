@@ -27,6 +27,7 @@ public class AuthController implements AuthControllerDocs {
    * 통합 로그인 API
    * - DB 조회 → 기존/신규 사용자 분기 처리
    */
+
   @Override
   @LogMonitoringInvocation
   @PostMapping("/login")
